@@ -1,8 +1,5 @@
-const input = document.getElementById("commandInput");
-const output = document.getElementById("output");
-const btn = document.getElementById("runBtn");
+import { loadTasks } from "./storage.js";
 
-btn.addEventListener("click", () => {
-  const cmd = input.value.trim();
-  output.textContent = "Command: " + cmd;
+loadTasks().then(tasks => {
+  console.log("Loaded:", tasks.length);
 });
