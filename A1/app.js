@@ -1,4 +1,4 @@
-import { addTask, listTasks, deleteTask, updateTask } from "./taskService.js";
+import { addTask, listTasks, deleteTask, updateTask, searchTasks } from "./taskService.js";
 
 // get UI elements
 const input = document.getElementById("commandInput");
@@ -63,6 +63,20 @@ btn.addEventListener("click", async () => {
       print("Updated: " + updated.id);
       return;
     }
+
+    // SEARCH
+    if (cmd.startsWith("search ")) {
+      const q = cmd.slice(7).trim();
+      const results = await searchTasks(q);
+
+      if (results.length === 0) {
+        print("No matches found");
+      } else {
+        print(results);
+      }
+      return;
+    }
+
 
     // UNKNOWN COMMAND
     print("Unknown command");

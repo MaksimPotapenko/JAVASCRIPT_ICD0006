@@ -45,3 +45,15 @@ export async function updateTask(id, newTitle) {
 
   return task;
 }
+
+export async function searchTasks(query) {
+  if (!query) return [];
+
+  const tasks = await loadTasks();
+  const q = query.toLowerCase();
+
+  return tasks.filter(task =>
+    task.title.toLowerCase().includes(q)
+  );
+}
+
