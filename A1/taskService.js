@@ -57,3 +57,16 @@ export async function searchTasks(query) {
   );
 }
 
+export async function filterTasks(filters) {
+  const tasks = await loadTasks();
+
+  return tasks.filter(task => {
+    if (filters.status && task.status !== filters.status) return false;
+    if (filters.priority && task.priority !== filters.priority) return false;
+    if (filters.tag && !task.tags?.includes(filters.tag)) return false;
+
+    return true;
+  });
+}
+
+

@@ -1,4 +1,11 @@
-import { addTask, listTasks, deleteTask, updateTask, searchTasks } from "./taskService.js";
+import {
+  addTask,
+  listTasks,
+  deleteTask,
+  updateTask,
+  searchTasks,
+  filterTasks
+} from "./taskService.js";
 
 // get UI elements
 const input = document.getElementById("commandInput");
@@ -77,6 +84,28 @@ btn.addEventListener("click", async () => {
       return;
     }
 
+    // FILTER
+    if (cmd.startsWith("filter ")) {
+      const parts = cmd.slice(7).split(" ");
+      const filters = {};
+
+      parts.forEach(p => {
+        const [key, value] = p.split("=");
+        if (key && value) {
+          filters[key] = value;
+        }
+      });
+
+      const results = await filterTasks(filters);
+
+      if (results.length === 0) {
+        print("No tasks match filter");
+      } else {
+        print(results);
+      }
+
+      return;
+    }
 
     // UNKNOWN COMMAND
     print("Unknown command");
