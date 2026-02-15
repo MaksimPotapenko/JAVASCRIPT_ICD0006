@@ -5,8 +5,31 @@ function makeId() {
 }
 
 export async function addTask(title) {
+  if (!title || title.length < 2) {
+    throw new Error("Title too short");
+  }
+
   const tasks = await loadTasks();
-  const task = { id: makeId(), title, status: "todo" };
+
+  const task = {
+    id: makeId(),
+    title,
+    description: "",
+    status: "todo",
+    priority: "medium",
+    dueDate: "",
+    tags: []
+  };
+
+  if (!title || title.length < 2) {
+    throw new Error("Title too short");
+  }
+
+  const validStatus = ["todo", "in-progress", "done"];
+  if (!validStatus.includes(task.status)) {
+    throw new Error("Invalid status");
+  }
+
   tasks.push(task);
   await saveTasks(tasks);
   return task;
@@ -17,6 +40,10 @@ export async function listTasks() {
 }
 
 export async function deleteTask(id) {
+  if (!id) {
+    throw new Error("ID is required");
+  }
+
   const tasks = await loadTasks();
 
   const next = tasks.filter(t => t.id !== id);
@@ -29,6 +56,10 @@ export async function deleteTask(id) {
 }
 
 export async function updateTask(id, newTitle) {
+  if (!id) {
+    throw new Error("ID is required");
+  }
+
   if (!newTitle || newTitle.length < 2) {
     throw new Error("Title too short");
   }
@@ -47,7 +78,9 @@ export async function updateTask(id, newTitle) {
 }
 
 export async function searchTasks(query) {
-  if (!query) return [];
+  if (!query || query.trim().length === 0) {
+    throw new Error("Search query empty");
+  }
 
   const tasks = await loadTasks();
   const q = query.toLowerCase();
