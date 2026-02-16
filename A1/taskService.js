@@ -4,8 +4,8 @@ function makeId() {
   return Date.now().toString();
 }
 
-export async function addTask(title) {
-  if (!title || title.length < 2) {
+export async function addTask(data) {
+  if (!data.title || data.title.length < 2) {
     throw new Error("Title too short");
   }
 
@@ -13,22 +13,13 @@ export async function addTask(title) {
 
   const task = {
     id: makeId(),
-    title,
-    description: "",
-    status: "todo",
-    priority: "medium",
-    dueDate: "",
-    tags: []
+    title: data.title,
+    description: data.description || "",
+    status: data.status || "todo",
+    priority: data.priority || "medium",
+    dueDate: data.dueDate || "",
+    tags: data.tags || []
   };
-
-  if (!title || title.length < 2) {
-    throw new Error("Title too short");
-  }
-
-  const validStatus = ["todo", "in-progress", "done"];
-  if (!validStatus.includes(task.status)) {
-    throw new Error("Invalid status");
-  }
 
   tasks.push(task);
   await saveTasks(tasks);

@@ -12,6 +12,29 @@ const input = document.getElementById("commandInput");
 const output = document.getElementById("output");
 const btn = document.getElementById("runBtn");
 
+const addBtn = document.getElementById("addBtn");
+
+addBtn.addEventListener("click", async () => {
+  try {
+    const taskData = {
+      title: document.getElementById("titleInput").value.trim(),
+      description: document.getElementById("descInput").value.trim(),
+      status: document.getElementById("statusInput").value,
+      priority: document.getElementById("priorityInput").value,
+      dueDate: document.getElementById("dateInput").value,
+      tags: document.getElementById("tagsInput").value
+        .split(",")
+        .map(t => t.trim())
+        .filter(Boolean)
+    };
+
+    const task = await addTask(taskData);
+    print("Added task " + task.id);
+  } catch (err) {
+    print("Error: " + err.message);
+  }
+});
+
 // helper to print
 function print(data) {
   if (typeof data === "string") {
