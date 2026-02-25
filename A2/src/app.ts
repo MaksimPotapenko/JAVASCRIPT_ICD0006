@@ -5,7 +5,7 @@ import {
   updateTask,
   searchTasks,
   filterTasks
-} from "./taskService.js";
+} from "../taskService.js";
 
 // get UI elements
 const input = document.getElementById("commandInput");

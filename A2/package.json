@@ -1,0 +1,14 @@
+{
+  "name": "assignment-2-task-manager-ts",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "serve": "npx http-server -c-1 ."
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
