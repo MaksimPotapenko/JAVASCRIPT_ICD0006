@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Task Manager</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Task Manager</h1>
+
+  <div id="taskForm">
+    <input id="titleInput" placeholder="Title">
+
+    <input id="descInput" placeholder="Description">
+
+    <select id="statusInput">
+      <option value="todo">Todo</option>
+      <option value="in-progress">In Progress</option>
+      <option value="done">Done</option>
+    </select>
+
+    <select id="priorityInput">
+      <option value="low">Low</option>
+      <option value="medium">Medium</option>
+      <option value="high">High</option>
+    </select>
+
+    <input type="date" id="dateInput">
+
+    <input id="tagsInput" placeholder="tags (comma separated)">
+
+    <button id="addBtn">Add Task</button>
+  </div>
+
+  <hr>
+
+  <input id="commandInput" placeholder="Commands: list, delete id, search word...">
+  <button id="runBtn">Run</button>
+
+  <pre id="output"></pre>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
