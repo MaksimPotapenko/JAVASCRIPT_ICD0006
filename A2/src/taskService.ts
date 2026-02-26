@@ -1,24 +1,34 @@
 import { loadTasks, saveTasks } from "./storage.js";
 import type { Task } from './models.js';
+import type { Priority, TaskStatus } from './models.js';
 
 function makeId(): string {
   return Date.now().toString();
 }
 
-export async function addTask(data) {
+export interface AddTaskInput {
+  title: string;
+  description?: string;
+  status?: TaskStatus;
+  priority?: Priority;
+  dueDate?: string;
+  tags?: string[];
+}
+
+export async function addTask(data: AddTaskInput): Promise<Task> {
   if (!data.title || data.title.length < 2) {
-    throw new Error("Title too short");
+    throw new Error('Title too short');
   }
 
   const tasks = await loadTasks();
 
-  const task = {
+  const task: Task = {
     id: makeId(),
     title: data.title,
-    description: data.description || "",
-    status: data.status || "todo",
-    priority: data.priority || "medium",
-    dueDate: data.dueDate || "",
+    description: data.description || '',
+    status: data.status || 'todo',
+    priority: data.priority || 'medium',
+    dueDate: data.dueDate || '',
     tags: data.tags || []
   };
 

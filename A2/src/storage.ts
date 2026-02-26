@@ -1,9 +1,11 @@
-const KEY = "tasks";
+import type { Task } from './models.js';
 
-export async function loadTasks() {
-  return JSON.parse(localStorage.getItem(KEY) || "[]");
+const KEY = 'tasks';
+
+export async function loadTasks(): Promise<Task[]> {
+  return JSON.parse(localStorage.getItem(KEY) || '[]') as Task[];
 }
 
-export async function saveTasks(tasks) {
+export async function saveTasks(tasks: Task[]): Promise<void> {
   localStorage.setItem(KEY, JSON.stringify(tasks));
 }
