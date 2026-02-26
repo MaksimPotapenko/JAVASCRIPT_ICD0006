@@ -1,6 +1,6 @@
 import { loadTasks, saveTasks } from "./storage.js";
-import type { Task } from './models.js';
-import type { Priority, TaskStatus } from './models.js';
+import type { Task, Priority, TaskStatus, SortField, SortOrder } from './models.js';
+import { sortBy } from './utils/generics.js';
 
 function makeId(): string {
   return Date.now().toString();
@@ -37,8 +37,18 @@ export async function addTask(data: AddTaskInput): Promise<Task> {
   return task;
 }
 
-export async function listTasks(): Promise<Task[]> {
-  return await loadTasks();
+export async function listTasks(sort?: { field: SortField; order: SortOrder }): Promise<Task[]> {
+  const tasks = await loadTasks();
+  if (!sort) return tasks;
+
+  return sortBy(tasks, t => {
+    switch (sort.field) {
+      case 'dueDate': return t.dueDate || '9999-12-31';
+      case 'priority': return t.priority === 'high' ? 0 : t.priority === 'medium' ? 1 : 2;
+      case 'status': return t.status === 'todo' ? 0 : t.status === 'in-progress' ? 1 : 2;
+      case 'title': return t.title.toLowerCase();
+    }
+  }, sort.order);
 }
 
 export async function deleteTask(id) {
@@ -87,29 +97,29 @@ export async function updateTask(id: string, patch: UpdateTaskPatch): Promise<Ta
   return task;
 }
 
-export async function searchTasks(query) {
-  if (!query || query.trim().length === 0) {
-    throw new Error("Search query empty");
-  }
+// export async function searchTasks(query) {
+//   if (!query || query.trim().length === 0) {
+//     throw new Error("Search query empty");
+//   }
 
-  const tasks = await loadTasks();
-  const q = query.toLowerCase();
+//   const tasks = await loadTasks();
+//   const q = query.toLowerCase();
 
-  return tasks.filter(task =>
-    task.title.toLowerCase().includes(q)
-  );
-}
+//   return tasks.filter(task =>
+//     task.title.toLowerCase().includes(q)
+//   );
+// }
 
-export async function filterTasks(filters) {
-  const tasks = await loadTasks();
+// export async function filterTasks(filters) {
+//   const tasks = await loadTasks();
 
-  return tasks.filter(task => {
-    if (filters.status && task.status !== filters.status) return false;
-    if (filters.priority && task.priority !== filters.priority) return false;
-    if (filters.tag && !task.tags?.includes(filters.tag)) return false;
+//   return tasks.filter(task => {
+//     if (filters.status && task.status !== filters.status) return false;
+//     if (filters.priority && task.priority !== filters.priority) return false;
+//     if (filters.tag && !task.tags?.includes(filters.tag)) return false;
 
-    return true;
-  });
+//     return true;
+//   });
 }
 
 

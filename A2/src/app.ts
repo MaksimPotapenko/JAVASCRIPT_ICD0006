@@ -8,8 +8,6 @@ import {
 
 import type {
   Priority,
-  SortField,
-  SortOrder,
   TaskStatus
 } from './models.js';
 

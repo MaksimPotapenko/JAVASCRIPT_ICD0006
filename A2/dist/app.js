@@ -1,115 +1,111 @@
-import { addTask, listTasks, deleteTask, updateTask, searchTasks, filterTasks } from "./taskService.js";
+import { addTask, deleteTask, searchTasks } from './taskService.js';
 // get UI elements
-const input = document.getElementById("commandInput");
-const output = document.getElementById("output");
-const btn = document.getElementById("runBtn");
-const addBtn = document.getElementById("addBtn");
-addBtn.addEventListener("click", async () => {
+const input = document.getElementById('commandInput');
+const output = document.getElementById('output');
+const btn = document.getElementById('runBtn');
+const addBtn = document.getElementById('addBtn');
+async function handleFormAdd() {
     try {
-        const taskData = {
-            title: document.getElementById("titleInput").value.trim(),
-            description: document.getElementById("descInput").value.trim(),
-            status: document.getElementById("statusInput").value,
-            priority: document.getElementById("priorityInput").value,
-            dueDate: document.getElementById("dateInput").value,
-            tags: document.getElementById("tagsInput").value
-                .split(",")
-                .map(t => t.trim())
-                .filter(Boolean)
-        };
-        const task = await addTask(taskData);
-        print("Added task " + task.id);
+        const title = document.getElementById('titleInput')?.value.trim() ?? '';
+        const description = document.getElementById('descInput')?.value.trim() ?? '';
+        const status = document.getElementById('statusInput')?.value;
+        const priority = document.getElementById('priorityInput')?.value;
+        const dueDate = document.getElementById('dateInput')?.value ?? '';
+        const tagsRaw = document.getElementById('tagsInput')?.value ?? '';
+        const task = await addTask({
+            title,
+            description,
+            status,
+            priority,
+            dueDate,
+            tags: toCsvArray(tagsRaw)
+        });
+        print(`Added task ${task.id}`);
     }
     catch (err) {
-        print("Error: " + err.message);
+        print(`Error: ${err instanceof Error ? err.message : String(err)}`);
     }
+}
+addBtn?.addEventListener('click', () => {
+    void handleFormAdd();
 });
 // helper to print
 function print(data) {
-    if (typeof data === "string") {
+    if (!output)
+        return;
+    if (typeof data === 'string')
         output.textContent = data;
-    }
-    else {
+    else
         output.textContent = JSON.stringify(data, null, 2);
+}
+function toCsvArray(raw) {
+    return raw
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+}
+function parseKeyValueArgs(raw) {
+    // supports: key=value, key="value with spaces"
+    const args = {};
+    const re = /(\w+)=("[^"]*"|\S+)/g;
+    let m;
+    while ((m = re.exec(raw)) !== null) {
+        const key = m[1];
+        let value = m[2];
+        if (value.startsWith('"') && value.endsWith('"'))
+            value = value.slice(1, -1);
+        args[key] = value;
     }
+    return args;
 }
 // button click handler
-btn.addEventListener("click", async () => {
-    const cmd = input.value.trim();
+btn?.addEventListener('click', () => {
+    void handleCommand();
+});
+async function handleCommand() {
+    const cmd = (input?.value ?? '').trim();
+    if (!cmd) {
+        print('Enter a command');
+        return;
+    }
     try {
-        // ADD COMMAND
-        if (cmd.startsWith("add ")) {
-            const title = cmd.slice(4).trim();
-            if (!title) {
-                print("Title required");
-                return;
-            }
-            const task = await addTask(title);
-            print(`Added task with id ${task.id}`);
-            return;
-        }
-        // LIST COMMAND
-        if (cmd === "list") {
-            const tasks = await listTasks();
-            if (tasks.length === 0) {
-                print("No tasks found");
-            }
-            else {
-                print(tasks);
-            }
-            return;
-        }
-        // DELETE
-        if (cmd.startsWith("delete ")) {
-            const id = cmd.split(" ")[1];
-            await deleteTask(id);
-            print("Deleted " + id);
-            return;
-        }
-        // UPDATE
-        if (cmd.startsWith("update ")) {
-            const parts = cmd.split(" ");
-            const id = parts[1];
-            const newTitle = parts.slice(2).join(" ");
-            const updated = await updateTask(id, { title: newTitle });
-            print("Updated: " + updated.id);
-            return;
-        }
-        // SEARCH
-        if (cmd.startsWith("search ")) {
-            const q = cmd.slice(7).trim();
-            const results = await searchTasks(q);
-            if (results.length === 0) {
-                print("No matches found");
-            }
-            else {
-                print(results);
-            }
-            return;
-        }
-        // FILTER
-        if (cmd.startsWith("filter ")) {
-            const parts = cmd.slice(7).split(" ");
-            const filters = {};
-            parts.forEach(p => {
-                const [key, value] = p.split("=");
-                if (key && value) {
-                    filters[key] = value;
-                }
+        // ----- ADD TASK -----
+        if (cmd.startsWith('add ')) {
+            const args = parseKeyValueArgs(cmd.slice(4));
+            const title = args.title ?? cmd.slice(4).trim();
+            const task = await addTask({
+                title,
+                description: args.desc,
+                status: args.status,
+                priority: args.priority,
+                dueDate: args.due,
+                tags: args.tags
+                    ? toCsvArray(args.tags)
+                    : undefined,
             });
-            const results = await filterTasks(filters);
-            if (results.length === 0) {
-                print("No tasks match filter");
-            }
-            else {
-                print(results);
-            }
+            print(`Added task ${task.id}`);
             return;
         }
-        // UNKNOWN COMMAND
-        print("Unknown command");
+        // ----- DELETE -----
+        if (cmd.startsWith('delete ')) {
+            const id = cmd.split(' ')[1];
+            await deleteTask(id);
+            print(`Deleted ${id}`);
+            return;
+        }
+        // ----- SEARCH -----
+        if (cmd.startsWith('search ')) {
+            const results = await searchTasks(cmd.slice(7).trim());
+            print(results.length ? results : 'No matches');
+            return;
+        }
+        // ----- LIST -----
+        if (cmd === 'list' || cmd.startsWith('list ')) {
+            return;
+        }
+        print('Unknown command');
     }
     catch (err) {
-        print("Error: " + err.message);
+        print(`Error: ${err instanceof Error ? err.message : String(err)}`);
     }
-});
+}

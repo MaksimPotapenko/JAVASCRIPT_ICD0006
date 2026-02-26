@@ -10,3 +10,6 @@ export interface Task {
   dueDate: string;   //YYYY-MM-DD or ""
   tags: string[];
 }
+
+export type SortField = 'dueDate' | 'priority' | 'status' | 'title';
+export type SortOrder = 'asc' | 'desc';
