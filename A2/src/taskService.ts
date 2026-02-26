@@ -57,25 +57,33 @@ export async function deleteTask(id) {
   await saveTasks(next);
 }
 
-export async function updateTask(id, newTitle) {
-  if (!id) {
-    throw new Error("ID is required");
-  }
+export interface UpdateTaskPatch {
+  title?: string;
+  description?: string;
+  status?: TaskStatus;
+  priority?: Priority;
+  dueDate?: string;
+  tags?: string[];
+}
 
-  if (!newTitle || newTitle.length < 2) {
-    throw new Error("Title too short");
-  }
+export async function updateTask(id: string, patch: UpdateTaskPatch): Promise<Task> {
+  if (!id) throw new Error('ID is required');
 
   const tasks = await loadTasks();
   const task = tasks.find(t => t.id === id);
+  if (!task) throw new Error('Task not found');
 
-  if (!task) {
-    throw new Error("Task not found");
+  if (patch.title !== undefined) {
+    if (patch.title.length < 2) throw new Error('Title too short');
+    task.title = patch.title;
   }
+  if (patch.description !== undefined) task.description = patch.description;
+  if (patch.status !== undefined) task.status = patch.status;
+  if (patch.priority !== undefined) task.priority = patch.priority;
+  if (patch.dueDate !== undefined) task.dueDate = patch.dueDate;
+  if (patch.tags !== undefined) task.tags = patch.tags;
 
-  task.title = newTitle;
   await saveTasks(tasks);
-
   return task;
 }
 

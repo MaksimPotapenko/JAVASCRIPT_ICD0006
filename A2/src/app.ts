@@ -5,7 +5,7 @@ import {
   updateTask,
   searchTasks,
   filterTasks
-} from "../taskService.js";
+} from "./taskService.js";
 
 // get UI elements
 const input = document.getElementById("commandInput");
@@ -89,7 +89,7 @@ btn.addEventListener("click", async () => {
       const id = parts[1];
       const newTitle = parts.slice(2).join(" ");
 
-      const updated = await updateTask(id, newTitle);
+      const updated = await updateTask(id, { title: newTitle });
       print("Updated: " + updated.id);
       return;
     }
