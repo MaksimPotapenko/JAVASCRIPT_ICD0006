@@ -4,16 +4,16 @@ function makeId() {
 }
 export async function addTask(data) {
     if (!data.title || data.title.length < 2) {
-        throw new Error("Title too short");
+        throw new Error('Title too short');
     }
     const tasks = await loadTasks();
     const task = {
         id: makeId(),
         title: data.title,
-        description: data.description || "",
-        status: data.status || "todo",
-        priority: data.priority || "medium",
-        dueDate: data.dueDate || "",
+        description: data.description || '',
+        status: data.status || 'todo',
+        priority: data.priority || 'medium',
+        dueDate: data.dueDate || '',
         tags: data.tags || []
     };
     tasks.push(task);
@@ -34,19 +34,28 @@ export async function deleteTask(id) {
     }
     await saveTasks(next);
 }
-export async function updateTask(id, newTitle) {
-    if (!id) {
-        throw new Error("ID is required");
-    }
-    if (!newTitle || newTitle.length < 2) {
-        throw new Error("Title too short");
-    }
+export async function updateTask(id, patch) {
+    if (!id)
+        throw new Error('ID is required');
     const tasks = await loadTasks();
     const task = tasks.find(t => t.id === id);
-    if (!task) {
-        throw new Error("Task not found");
+    if (!task)
+        throw new Error('Task not found');
+    if (patch.title !== undefined) {
+        if (patch.title.length < 2)
+            throw new Error('Title too short');
+        task.title = patch.title;
     }
-    task.title = newTitle;
+    if (patch.description !== undefined)
+        task.description = patch.description;
+    if (patch.status !== undefined)
+        task.status = patch.status;
+    if (patch.priority !== undefined)
+        task.priority = patch.priority;
+    if (patch.dueDate !== undefined)
+        task.dueDate = patch.dueDate;
+    if (patch.tags !== undefined)
+        task.tags = patch.tags;
     await saveTasks(tasks);
     return task;
 }

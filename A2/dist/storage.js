@@ -1,6 +1,7 @@
-const KEY = "tasks";
+import { safeJsonParse } from './utils/generics.ts';
+const KEY = 'tasks';
 export async function loadTasks() {
-    return JSON.parse(localStorage.getItem(KEY) || "[]");
+    return safeJsonParse(localStorage.getItem(KEY), []);
 }
 export async function saveTasks(tasks) {
     localStorage.setItem(KEY, JSON.stringify(tasks));

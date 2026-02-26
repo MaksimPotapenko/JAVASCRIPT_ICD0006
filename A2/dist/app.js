@@ -1,4 +1,4 @@
-import { addTask, listTasks, deleteTask, updateTask, searchTasks, filterTasks } from "../taskService.js";
+import { addTask, listTasks, deleteTask, updateTask, searchTasks, filterTasks } from "./taskService.js";
 // get UI elements
 const input = document.getElementById("commandInput");
 const output = document.getElementById("output");
@@ -71,7 +71,7 @@ btn.addEventListener("click", async () => {
             const parts = cmd.split(" ");
             const id = parts[1];
             const newTitle = parts.slice(2).join(" ");
-            const updated = await updateTask(id, newTitle);
+            const updated = await updateTask(id, { title: newTitle });
             print("Updated: " + updated.id);
             return;
         }
