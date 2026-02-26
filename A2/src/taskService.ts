@@ -1,6 +1,7 @@
 import { loadTasks, saveTasks } from "./storage.js";
+import type { Task } from './models.js';
 
-function makeId() {
+function makeId(): string {
   return Date.now().toString();
 }
 
@@ -26,7 +27,7 @@ export async function addTask(data) {
   return task;
 }
 
-export async function listTasks() {
+export async function listTasks(): Promise<Task[]> {
   return await loadTasks();
 }
 
