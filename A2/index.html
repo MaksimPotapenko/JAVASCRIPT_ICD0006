@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Task Manager</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Manager (TypeScript)</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>Task Manager</h1>
+  <h1>Task Manager (A2 - TypeScript)</h1>
 
   <div id="taskForm">
-    <input id="titleInput" placeholder="Title">
-
-    <input id="descInput" placeholder="Description">
+    <input id="titleInput" placeholder="Title" />
+    <input id="descInput" placeholder="Description" />
 
     <select id="statusInput">
       <option value="todo">Todo</option>
@@ -20,20 +21,23 @@
 
     <select id="priorityInput">
       <option value="low">Low</option>
-      <option value="medium">Medium</option>
+      <option value="medium" selected>Medium</option>
       <option value="high">High</option>
     </select>
 
-    <input type="date" id="dateInput">
+    <input type="date" id="dateInput" />
+    <input id="tagsInput" placeholder="tags (comma separated)" />
 
-    <input id="tagsInput" placeholder="tags (comma separated)">
+    <input id="categoryInput" placeholder="categoryId (optional)" />
+    <input id="depsInput" placeholder="dependencies (task ids, comma separated)" />
+    <input id="recurInput" placeholder='recurrence e.g. daily:1 or weekly:2;end=2026-12-31' />
 
     <button id="addBtn">Add Task</button>
   </div>
 
-  <hr>
+  <hr />
 
-  <input id="commandInput" placeholder="Commands: list, delete id, search word...">
+  <input id="commandInput" placeholder='Commands: list sort=dueDate order=asc | stats | cat add name="Work" priorities=low,medium | update <id> status=done ...' />
   <button id="runBtn">Run</button>
 
   <pre id="output"></pre>

@@ -12,7 +12,8 @@
     "skipLibCheck": true,
     "rootDir": "src",
     "outDir": "dist",
-    "moduleResolution": "Bundler"
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]

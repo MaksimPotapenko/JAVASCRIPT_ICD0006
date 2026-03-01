@@ -1,35 +1,9 @@
-import { addTask, deleteTask, searchTasks } from './taskService.js';
-// get UI elements
+import { addCategory, addTask, categoryStats, deleteCategory, deleteTask, getStatistics, listCategories, listTasks, searchTasks, updateCategory, updateTask } from './taskService.js';
+// UI elements
 const input = document.getElementById('commandInput');
 const output = document.getElementById('output');
 const btn = document.getElementById('runBtn');
 const addBtn = document.getElementById('addBtn');
-async function handleFormAdd() {
-    try {
-        const title = document.getElementById('titleInput')?.value.trim() ?? '';
-        const description = document.getElementById('descInput')?.value.trim() ?? '';
-        const status = document.getElementById('statusInput')?.value;
-        const priority = document.getElementById('priorityInput')?.value;
-        const dueDate = document.getElementById('dateInput')?.value ?? '';
-        const tagsRaw = document.getElementById('tagsInput')?.value ?? '';
-        const task = await addTask({
-            title,
-            description,
-            status,
-            priority,
-            dueDate,
-            tags: toCsvArray(tagsRaw)
-        });
-        print(`Added task ${task.id}`);
-    }
-    catch (err) {
-        print(`Error: ${err instanceof Error ? err.message : String(err)}`);
-    }
-}
-addBtn?.addEventListener('click', () => {
-    void handleFormAdd();
-});
-// helper to print
 function print(data) {
     if (!output)
         return;
@@ -45,7 +19,7 @@ function toCsvArray(raw) {
         .filter(Boolean);
 }
 function parseKeyValueArgs(raw) {
-    // supports: key=value, key="value with spaces"
+    // Supports: key=value, key="value with spaces"
     const args = {};
     const re = /(\w+)=("[^"]*"|\S+)/g;
     let m;
@@ -58,7 +32,37 @@ function parseKeyValueArgs(raw) {
     }
     return args;
 }
-// button click handler
+async function handleFormAdd() {
+    try {
+        const title = document.getElementById('titleInput')?.value.trim() ?? '';
+        const description = document.getElementById('descInput')?.value.trim() ?? '';
+        const status = document.getElementById('statusInput')?.value;
+        const priority = document.getElementById('priorityInput')?.value;
+        const dueDate = document.getElementById('dateInput')?.value ?? '';
+        const tagsRaw = document.getElementById('tagsInput')?.value ?? '';
+        const categoryId = document.getElementById('categoryInput')?.value.trim() || undefined;
+        const depsRaw = document.getElementById('depsInput')?.value ?? '';
+        const recurRaw = document.getElementById('recurInput')?.value ?? '';
+        const task = await addTask({
+            title,
+            description,
+            status,
+            priority,
+            dueDate,
+            tags: toCsvArray(tagsRaw),
+            categoryId,
+            dependencies: toCsvArray(depsRaw),
+            recurrence: recurRaw
+        });
+        print(`Added task ${task.id}`);
+    }
+    catch (err) {
+        print(`Error: ${err instanceof Error ? err.message : String(err)}`);
+    }
+}
+addBtn?.addEventListener('click', () => {
+    void handleFormAdd();
+});
 btn?.addEventListener('click', () => {
     void handleCommand();
 });
@@ -69,7 +73,76 @@ async function handleCommand() {
         return;
     }
     try {
-        // ----- ADD TASK -----
+        // ---- categories ----
+        if (cmd.startsWith('cat ')) {
+            const rest = cmd.slice(4).trim();
+            if (rest === 'list') {
+                const cats = await listCategories();
+                print(cats.length ? cats : 'No categories');
+                return;
+            }
+            if (rest === 'stats') {
+                const s = await categoryStats();
+                print(s);
+                return;
+            }
+            if (rest.startsWith('add ')) {
+                const args = parseKeyValueArgs(rest.slice(4));
+                const name = args.name ?? '';
+                const priorities = args.priorities ? toCsvArray(args.priorities) : undefined;
+                const cat = await addCategory({ name, allowedPriorities: priorities });
+                print({ message: 'Added category', id: cat.id, name: cat.name, allowedPriorities: cat.allowedPriorities });
+                return;
+            }
+            if (rest.startsWith('update ')) {
+                const after = rest.slice(7).trim();
+                const [id, ...tail] = after.split(' ');
+                const args = parseKeyValueArgs(tail.join(' '));
+                const patch = {};
+                if (args.name)
+                    patch.name = args.name;
+                if (args.priorities)
+                    patch.allowedPriorities = toCsvArray(args.priorities);
+                const cat = await updateCategory(id, patch);
+                print({ message: 'Updated category', cat });
+                return;
+            }
+            if (rest.startsWith('delete ')) {
+                const id = rest.split(' ')[1];
+                await deleteCategory(id);
+                print(`Deleted category ${id}`);
+                return;
+            }
+            print('Unknown category command. Try: cat list | cat add name="Work" priorities=low,medium | cat update <id> ... | cat delete <id> | cat stats');
+            return;
+        }
+        // ---- stats ----
+        if (cmd === 'stats') {
+            const stats = await getStatistics();
+            print(stats);
+            return;
+        }
+        // ---- list with optional filters/sort ----
+        if (cmd === 'list' || cmd.startsWith('list ')) {
+            const args = cmd === 'list' ? {} : parseKeyValueArgs(cmd.slice(5));
+            const filters = {};
+            if (args.status)
+                filters.status = args.status;
+            if (args.priority)
+                filters.priority = args.priority;
+            if (args.tag)
+                filters.tag = args.tag;
+            if (args.category)
+                filters.categoryId = args.category;
+            if (args.overdue)
+                filters.overdue = args.overdue === 'true' || args.overdue === '1';
+            const sortField = args.sort ?? undefined;
+            const sortOrder = args.order ?? 'asc';
+            const tasks = await listTasks(Object.keys(filters).length ? filters : undefined, sortField ? { field: sortField, order: sortOrder } : undefined);
+            print(tasks.length ? tasks : 'No tasks found');
+            return;
+        }
+        // ---- add via command ----
         if (cmd.startsWith('add ')) {
             const args = parseKeyValueArgs(cmd.slice(4));
             const title = args.title ?? cmd.slice(4).trim();
@@ -79,31 +152,61 @@ async function handleCommand() {
                 status: args.status,
                 priority: args.priority,
                 dueDate: args.due,
-                tags: args.tags
-                    ? toCsvArray(args.tags)
-                    : undefined,
+                tags: args.tags ? toCsvArray(args.tags) : undefined,
+                categoryId: args.category,
+                dependencies: args.deps ? toCsvArray(args.deps) : undefined,
+                recurrence: args.recur
             });
             print(`Added task ${task.id}`);
             return;
         }
-        // ----- DELETE -----
+        // ---- delete ----
         if (cmd.startsWith('delete ')) {
             const id = cmd.split(' ')[1];
             await deleteTask(id);
             print(`Deleted ${id}`);
             return;
         }
-        // ----- SEARCH -----
+        // ---- update ----
+        if (cmd.startsWith('update ')) {
+            const after = cmd.slice(7).trim();
+            const [id, ...tail] = after.split(' ');
+            const args = parseKeyValueArgs(tail.join(' '));
+            const patch = {};
+            if (args.title)
+                patch.title = args.title;
+            if (args.desc)
+                patch.description = args.desc;
+            if (args.status)
+                patch.status = args.status;
+            if (args.priority)
+                patch.priority = args.priority;
+            if (args.due !== undefined)
+                patch.dueDate = args.due;
+            if (args.tags)
+                patch.tags = toCsvArray(args.tags);
+            if (args.category)
+                patch.categoryId = args.category;
+            if (args.category === 'null')
+                patch.categoryId = null;
+            if (args.deps)
+                patch.dependencies = toCsvArray(args.deps);
+            if (args.recur)
+                patch.recurrence = args.recur;
+            if (args.recur === 'null')
+                patch.recurrence = null;
+            const updated = await updateTask(id, patch);
+            print({ message: 'Updated', task: updated });
+            return;
+        }
+        // ---- search ----
         if (cmd.startsWith('search ')) {
-            const results = await searchTasks(cmd.slice(7).trim());
+            const q = cmd.slice(7).trim();
+            const results = await searchTasks(q);
             print(results.length ? results : 'No matches');
             return;
         }
-        // ----- LIST -----
-        if (cmd === 'list' || cmd.startsWith('list ')) {
-            return;
-        }
-        print('Unknown command');
+        print('Unknown command. Try: list, add, update, delete, search, stats, cat ...');
     }
     catch (err) {
         print(`Error: ${err instanceof Error ? err.message : String(err)}`);
