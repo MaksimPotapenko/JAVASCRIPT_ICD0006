@@ -58,7 +58,7 @@ btn.addEventListener("click", async () => {
         return;
       }
 
-      const task = await addTask(title);
+      const task = await addTask({ title });
       print(`Added task with id ${task.id}`);
       return;
     }
