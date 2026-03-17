@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Task Manager</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -9,7 +11,6 @@
 
   <div id="taskForm">
     <input id="titleInput" placeholder="Title">
-
     <input id="descInput" placeholder="Description">
 
     <select id="statusInput">
@@ -20,20 +21,22 @@
 
     <select id="priorityInput">
       <option value="low">Low</option>
-      <option value="medium">Medium</option>
+      <option value="medium" selected>Medium</option>
       <option value="high">High</option>
     </select>
 
     <input type="date" id="dateInput">
-
-    <input id="tagsInput" placeholder="tags (comma separated)">
+    <input id="tagsInput" placeholder="Tags (comma separated)">
 
     <button id="addBtn">Add Task</button>
   </div>
 
   <hr>
 
-  <input id="commandInput" placeholder="Commands: list, delete id, search word...">
+  <input
+    id="commandInput"
+    placeholder='Commands: list | add title="Buy milk" priority=high | update <id> status=done tags=home,urgent | filter status=todo'
+  >
   <button id="runBtn">Run</button>
 
   <pre id="output"></pre>
