@@ -157,7 +157,6 @@ export async function updateTask(id, patch) {
     }
     if (patch.dependencies !== undefined) {
         task.dependencies = patch.dependencies.map(x => x.trim()).filter(Boolean);
-        // Validate deps exist and not self
         if (task.dependencies.includes(task.id))
             throw new Error('Task cannot depend on itself');
         const ids = new Set(tasks.map(t => t.id));
@@ -183,26 +182,30 @@ export async function updateTask(id, patch) {
                 throw new Error(`Cannot complete task. Incomplete dependencies: ${incomplete.map(t => t.id).join(', ')}`);
             }
         }
+        // Only spawn next recurrence on a transition into done
+        const wasDone = task.status === 'done';
         task.status = patch.status;
-        // Recurrence enhancement: when completing a recurring task, generate the next instance
-        if (patch.status === 'done' && task.recurrence) {
+        if (!wasDone && patch.status === 'done' && task.recurrence) {
             const base = task.dueDate || todayIso();
             const nextDue = addRecurrence(base, task.recurrence);
             const end = task.recurrence.endDate;
             if (!end || compareIsoDates(nextDue, end) <= 0) {
-                const now = Date.now();
-                const nextTask = {
-                    ...task,
-                    id: makeId(),
-                    status: 'todo',
-                    dueDate: nextDue,
-                    seriesId: task.seriesId ?? task.id,
-                    createdAt: now,
-                    updatedAt: now
-                };
-                // Prevent infinite fan-out if user toggles status quickly: generate once per completion
-                nextTask.title = task.title;
-                tasks.push(nextTask);
+                const seriesId = task.seriesId ?? task.id;
+                // Prevent duplicates for same series + dueDate
+                const alreadyExists = tasks.some(t => (t.seriesId ?? t.id) === seriesId && t.dueDate === nextDue);
+                if (!alreadyExists) {
+                    const now = Date.now();
+                    const nextTask = {
+                        ...task,
+                        id: makeId(),
+                        status: 'todo',
+                        dueDate: nextDue,
+                        seriesId,
+                        createdAt: now,
+                        updatedAt: now
+                    };
+                    tasks.push(nextTask);
+                }
             }
         }
     }

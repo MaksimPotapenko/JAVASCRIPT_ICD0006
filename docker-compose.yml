@@ -1,0 +1,7 @@
+services:
+  web:
+    build: .
+    container_name: mpotap-javascript
+    ports:
+      - "80:80"
+    restart: unless-stopped

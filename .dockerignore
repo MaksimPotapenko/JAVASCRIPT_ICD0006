@@ -1,0 +1,6 @@
+.git
+.gitlab-ci.yml
+.dockerignore
+docker-compose.yml
+README.md
+**/node_modules
