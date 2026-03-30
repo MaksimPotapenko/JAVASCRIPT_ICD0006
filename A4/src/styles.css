@@ -84,12 +84,40 @@ a {
 }
 
 .task-form-grid {
-  grid-template-columns: 2fr repeat(5, minmax(0, 1fr)) auto;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   align-items: end;
 }
 
 .task-name-field {
+  grid-column: span 4;
+}
+
+.task-category-field,
+.task-priority-field,
+.task-sort-field,
+.task-due-field {
   grid-column: span 2;
+}
+
+.task-completed-field,
+.task-archived-field {
+  grid-column: span 2;
+}
+
+.task-submit-button {
+  grid-column: span 2;
+}
+
+.task-completed-field,
+.task-archived-field,
+.task-submit-button {
+  align-self: end;
+}
+
+.task-completed-field,
+.task-archived-field {
+  min-height: 44px;
+  white-space: nowrap;
 }
 
 .hero-panel,
@@ -235,6 +263,16 @@ a {
   }
 
   .task-name-field {
+    grid-column: auto;
+  }
+
+  .task-category-field,
+  .task-priority-field,
+  .task-sort-field,
+  .task-due-field,
+  .task-completed-field,
+  .task-archived-field,
+  .task-submit-button {
     grid-column: auto;
   }
 

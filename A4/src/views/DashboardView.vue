@@ -201,7 +201,7 @@ function dueDateInputValue(value?: string | null) {
           <input v-model.trim="taskForm.taskName" required />
         </label>
 
-        <label class="field">
+        <label class="field task-category-field">
           <span>Category</span>
           <select v-model="taskForm.todoCategoryId" required>
             <option disabled value="">Select category</option>
@@ -211,7 +211,7 @@ function dueDateInputValue(value?: string | null) {
           </select>
         </label>
 
-        <label class="field">
+        <label class="field task-priority-field">
           <span>Priority</span>
           <select v-model="taskForm.todoPriorityId" required>
             <option disabled value="">Select priority</option>
@@ -221,27 +221,27 @@ function dueDateInputValue(value?: string | null) {
           </select>
         </label>
 
-        <label class="field">
+        <label class="field task-sort-field">
           <span>Sort order</span>
           <input v-model.number="taskForm.taskSort" type="number" min="0" required />
         </label>
 
-        <label class="field">
+        <label class="field task-due-field">
           <span>Due date</span>
           <input v-model="taskForm.dueDt" type="datetime-local" />
         </label>
 
-        <label class="field checkbox-field">
+        <label class="field checkbox-field task-completed-field">
           <input v-model="taskForm.isCompleted" type="checkbox" />
           <span>Completed</span>
         </label>
 
-        <label class="field checkbox-field">
+        <label class="field checkbox-field task-archived-field">
           <input v-model="taskForm.isArchived" type="checkbox" />
           <span>Archived</span>
         </label>
 
-        <button class="button" type="submit" :disabled="!canCreateTask">Add task</button>
+        <button class="button task-submit-button" type="submit" :disabled="!canCreateTask">Add task</button>
       </form>
     </section>
 
