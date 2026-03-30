@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+A4/vite.config.js
+A4/vite.config.d.ts
+*.log
+
+.DS_Store
+Thumbs.db
+
+.idea/
+.vscode/
