@@ -5,3 +5,9 @@ services:
     ports:
       - "80:80"
     restart: unless-stopped
+    depends_on:
+      - a4
+  a4:
+    build: ./A4
+    container_name: mpotap-javascript-a4
+    restart: unless-stopped
