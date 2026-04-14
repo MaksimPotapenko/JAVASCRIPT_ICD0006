@@ -14,7 +14,6 @@ const categoryForm = reactive({
 const priorityForm = reactive({
   priorityName: "",
   prioritySort: 0,
-  tag: "",
 });
 
 const taskForm = reactive({
@@ -56,7 +55,6 @@ async function submitPriority() {
   await todoStore.addPriority({ ...priorityForm });
   priorityForm.priorityName = "";
   priorityForm.prioritySort = todoStore.priorities.length;
-  priorityForm.tag = "";
 
   if (!taskForm.todoPriorityId && todoStore.priorities[0]) {
     taskForm.todoPriorityId = todoStore.priorities[0].id;
@@ -168,10 +166,6 @@ function dueDateInputValue(value?: string | null) {
             <span>Sort order</span>
             <input v-model.number="priorityForm.prioritySort" type="number" min="0" required />
           </label>
-          <label class="field">
-            <span>Tag</span>
-            <input v-model.trim="priorityForm.tag" />
-          </label>
           <button class="button" type="submit">Add priority</button>
         </form>
 
@@ -179,10 +173,7 @@ function dueDateInputValue(value?: string | null) {
           <article v-for="priority in todoStore.priorities" :key="priority.id" class="list-card">
             <div class="stack compact">
               <input v-model.trim="priority.priorityName" />
-              <div class="grid two-up">
-                <input v-model.number="priority.prioritySort" type="number" min="0" />
-                <input v-model.trim="priority.tag" placeholder="Tag" />
-              </div>
+              <input v-model.number="priority.prioritySort" type="number" min="0" />
             </div>
             <div class="inline-actions">
               <button class="button small ghost" type="button" @click="todoStore.savePriority(priority)">Save</button>
@@ -282,9 +273,7 @@ function dueDateInputValue(value?: string | null) {
                   <span>Archived</span>
                 </label>
               </div>
-              <small>
-                {{ categoryLabel(task.todoCategoryId) }} · {{ priorityLabel(task.todoPriorityId) }} · {{ formatDate(task.dueDt) }}
-              </small>
+              <small>{{ categoryLabel(task.todoCategoryId) }} | {{ priorityLabel(task.todoPriorityId) }} | {{ formatDate(task.dueDt) }}</small>
             </div>
             <div class="inline-actions">
               <button class="button small ghost" type="button" @click="todoStore.saveTask(task)">Save</button>
@@ -300,7 +289,7 @@ function dueDateInputValue(value?: string | null) {
           <article v-for="task in todoStore.archivedTasks" :key="task.id" class="list-card muted">
             <div class="stack compact">
               <strong>{{ task.taskName }}</strong>
-              <small>{{ categoryLabel(task.todoCategoryId) }} · {{ priorityLabel(task.todoPriorityId) }}</small>
+              <small>{{ categoryLabel(task.todoCategoryId) }} | {{ priorityLabel(task.todoPriorityId) }}</small>
               <small>{{ formatDate(task.dueDt) }}</small>
             </div>
             <div class="inline-actions">

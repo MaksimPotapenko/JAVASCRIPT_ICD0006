@@ -2,10 +2,10 @@ import { apiRequest } from "@/services/api";
 import type {
   TodoCategory,
   TodoCategoryCreate,
-  TodoCategoryEdit,
   TodoPriority,
+  TodoPriorityCreate,
   TodoTask,
-  TodoTaskUpsert,
+  TodoTaskCreate,
 } from "@/types/api";
 
 export const todoApi = {
@@ -18,7 +18,7 @@ export const todoApi = {
       body: JSON.stringify(payload),
     });
   },
-  updateCategory(id: string, payload: TodoCategoryEdit) {
+  updateCategory(id: string, payload: TodoCategory) {
     return apiRequest<TodoCategory>(`/TodoCategories/${id}`, {
       method: "PUT",
       body: JSON.stringify(payload),
@@ -31,7 +31,7 @@ export const todoApi = {
   getPriorities() {
     return apiRequest<TodoPriority[]>("/TodoPriorities");
   },
-  createPriority(payload: TodoPriority) {
+  createPriority(payload: TodoPriorityCreate) {
     return apiRequest<TodoPriority>("/TodoPriorities", {
       method: "POST",
       body: JSON.stringify(payload),
@@ -50,13 +50,13 @@ export const todoApi = {
   getTasks() {
     return apiRequest<TodoTask[]>("/TodoTasks");
   },
-  createTask(payload: TodoTaskUpsert) {
+  createTask(payload: TodoTaskCreate) {
     return apiRequest<TodoTask>("/TodoTasks", {
       method: "POST",
       body: JSON.stringify(payload),
     });
   },
-  updateTask(id: string, payload: TodoTaskUpsert) {
+  updateTask(id: string, payload: TodoTask) {
     return apiRequest<TodoTask>(`/TodoTasks/${id}`, {
       method: "PUT",
       body: JSON.stringify(payload),

@@ -1,7 +1,7 @@
 import type { ApiMessage, RefreshTokenPayload, SessionState } from "@/types/api";
 import { clearStoredSession, readStoredSession, writeStoredSession } from "@/services/session";
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "https://taltech.akaver.com/api/v1.0";
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "https://taltech.akaver.com/api/v1";
 
 export class ApiError extends Error {
   status: number;

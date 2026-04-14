@@ -38,22 +38,22 @@ export interface TodoCategory {
 }
 
 export interface TodoCategoryCreate {
-  id: string;
   categoryName: string;
   categorySort: number;
   tag?: string | null;
-}
-
-export interface TodoCategoryEdit extends TodoCategoryCreate {
-  syncDt?: string | null;
 }
 
 export interface TodoPriority {
   id: string;
   priorityName: string;
   prioritySort: number;
-  syncDt?: string;
-  tag?: string | null;
+  syncDt: string;
+}
+
+export interface TodoPriorityCreate {
+  priorityName: string;
+  prioritySort: number;
+  syncDt: string;
 }
 
 export interface TodoTask {
@@ -69,8 +69,7 @@ export interface TodoTask {
   syncDt: string;
 }
 
-export interface TodoTaskUpsert {
-  id: string;
+export interface TodoTaskCreate {
   taskName: string;
   taskSort: number;
   createdDt: string;
@@ -79,5 +78,4 @@ export interface TodoTaskUpsert {
   isArchived: boolean;
   todoCategoryId: string;
   todoPriorityId: string;
-  syncDt: string;
 }

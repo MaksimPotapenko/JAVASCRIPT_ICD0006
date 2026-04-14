@@ -1,6 +1,6 @@
 # Assignment 4: Vue 3 Todo Client
 
-Vue 3 + TypeScript frontend for the TalTech Todo backend at `https://taltech.akaver.com/api/v1.0`.
+Vue 3 + TypeScript frontend for the TalTech Todo backend at `https://taltech.akaver.com/api/v1`.
 
 ## Features
 

@@ -4,10 +4,6 @@ import { defineStore } from "pinia";
 import { todoApi } from "@/services/todo-api";
 import type { TodoCategory, TodoPriority, TodoTask } from "@/types/api";
 
-function newId() {
-  return crypto.randomUUID();
-}
-
 function nowIso() {
   return new Date().toISOString();
 }
@@ -45,7 +41,6 @@ export const useTodoStore = defineStore("todos", () => {
 
   async function addCategory(input: { categoryName: string; categorySort: number; tag?: string }) {
     const created = await todoApi.createCategory({
-      id: newId(),
       categoryName: input.categoryName.trim(),
       categorySort: input.categorySort,
       tag: input.tag?.trim() || null,
@@ -56,11 +51,9 @@ export const useTodoStore = defineStore("todos", () => {
 
   async function saveCategory(category: TodoCategory) {
     const updated = await todoApi.updateCategory(category.id, {
-      id: category.id,
+      ...category,
       categoryName: category.categoryName.trim(),
-      categorySort: category.categorySort,
       tag: category.tag ?? null,
-      syncDt: category.syncDt,
     });
 
     categories.value = categories.value.map((item) => (item.id === updated.id ? updated : item));
@@ -72,12 +65,10 @@ export const useTodoStore = defineStore("todos", () => {
     tasks.value = tasks.value.filter((task) => task.todoCategoryId !== id);
   }
 
-  async function addPriority(input: { priorityName: string; prioritySort: number; tag?: string }) {
+  async function addPriority(input: { priorityName: string; prioritySort: number }) {
     const created = await todoApi.createPriority({
-      id: newId(),
       priorityName: input.priorityName.trim(),
       prioritySort: input.prioritySort,
-      tag: input.tag?.trim() || null,
       syncDt: nowIso(),
     });
 
@@ -88,7 +79,7 @@ export const useTodoStore = defineStore("todos", () => {
     const updated = await todoApi.updatePriority(priority.id, {
       ...priority,
       priorityName: priority.priorityName.trim(),
-      syncDt: priority.syncDt ?? nowIso(),
+      syncDt: priority.syncDt,
     });
 
     priorities.value = priorities.value.map((item) => (item.id === updated.id ? updated : item));
@@ -109,18 +100,15 @@ export const useTodoStore = defineStore("todos", () => {
     isCompleted: boolean;
     isArchived: boolean;
   }) {
-    const timestamp = nowIso();
     const created = await todoApi.createTask({
-      id: newId(),
+      createdDt: nowIso(),
       taskName: input.taskName.trim(),
       taskSort: input.taskSort,
-      createdDt: timestamp,
       dueDt: input.dueDt ? new Date(input.dueDt).toISOString() : null,
       todoCategoryId: input.todoCategoryId,
       todoPriorityId: input.todoPriorityId,
       isCompleted: input.isCompleted,
       isArchived: input.isArchived,
-      syncDt: timestamp,
     });
 
     tasks.value = [...tasks.value, created].sort((a, b) => a.taskSort - b.taskSort);
