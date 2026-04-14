@@ -14,6 +14,7 @@ const form = reactive({
   lastName: "",
 });
 
+// Submits the registration form through the auth store and lets the store handle session setup.
 async function submit() {
   await authStore.register({ ...form });
 }

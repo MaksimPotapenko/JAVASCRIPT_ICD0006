@@ -15,6 +15,7 @@ const router = createRouter({
   ],
 });
 
+// Protects the dashboard from guests and redirects authenticated users away from guest-only routes.
 router.beforeEach((to) => {
   const hasSession = Boolean(readStoredSession()?.token);
 

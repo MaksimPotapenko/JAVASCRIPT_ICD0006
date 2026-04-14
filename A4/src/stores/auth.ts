@@ -20,6 +20,7 @@ export const useAuthStore = defineStore("auth", () => {
   });
   const email = computed(() => session.value?.email ?? "");
 
+  // Logs in the user, updates store state, and redirects into the protected dashboard.
   async function loginUser(payload: LoginPayload) {
     isLoading.value = true;
     error.value = "";
@@ -34,6 +35,7 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
+  // Registers a new user account, stores the session, and redirects to the dashboard.
   async function registerUser(payload: RegisterPayload) {
     isLoading.value = true;
     error.value = "";
@@ -48,6 +50,7 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
+  // Restores the session with the refresh token and sends the user back to login if refresh fails.
   async function refresh() {
     session.value = await refreshStoredSession();
     if (!session.value) {
@@ -55,6 +58,7 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
+  // Clears auth state and returns the UI to the login route.
   function logoutUser() {
     logout();
     session.value = null;

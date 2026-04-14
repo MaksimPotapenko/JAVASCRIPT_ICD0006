@@ -9,6 +9,7 @@ const route = useRoute();
 
 const isAuthRoute = computed(() => route.name === "login" || route.name === "register");
 
+// Delegates logout to the auth store so token cleanup and routing happen in one place.
 function handleLogout() {
   authStore.logout();
 }

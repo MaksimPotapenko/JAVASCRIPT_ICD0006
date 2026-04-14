@@ -40,6 +40,7 @@ onMounted(async () => {
   }
 });
 
+// Creates a category from the form and keeps the category select ready for the next task.
 async function submitCategory() {
   await todoStore.addCategory({ ...categoryForm });
   categoryForm.categoryName = "";
@@ -51,6 +52,7 @@ async function submitCategory() {
   }
 }
 
+// Creates a priority from the form and updates the default task priority selection when needed.
 async function submitPriority() {
   await todoStore.addPriority({ ...priorityForm });
   priorityForm.priorityName = "";
@@ -61,6 +63,7 @@ async function submitPriority() {
   }
 }
 
+// Creates a task and resets the form while preserving selected category and priority values.
 async function submitTask() {
   await todoStore.addTask({ ...taskForm });
   taskForm.taskName = "";
@@ -70,19 +73,23 @@ async function submitTask() {
   taskForm.isArchived = false;
 }
 
+// Resolves a category name for task cards from the currently loaded category list.
 function categoryLabel(categoryId: string) {
   return todoStore.categories.find((item) => item.id === categoryId)?.categoryName ?? "Unknown";
 }
 
+// Resolves a priority name for task cards from the currently loaded priority list.
 function priorityLabel(priorityId: string) {
   return todoStore.priorities.find((item) => item.id === priorityId)?.priorityName ?? "Unknown";
 }
 
+// Formats API date strings into a readable local date/time label for the UI.
 function formatDate(value?: string | null) {
   if (!value) return "No due date";
   return new Date(value).toLocaleString();
 }
 
+// Converts stored ISO dates into the local datetime-local input format expected by the browser.
 function dueDateInputValue(value?: string | null) {
   if (!value) return "";
   const date = new Date(value);

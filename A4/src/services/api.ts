@@ -13,6 +13,7 @@ export class ApiError extends Error {
   }
 }
 
+// Extracts the most useful backend error text from the API response payload.
 function extractMessage(payload: unknown): string {
   if (!payload || typeof payload !== "object") return "Request failed";
 
@@ -23,6 +24,7 @@ function extractMessage(payload: unknown): string {
   return "Request failed";
 }
 
+// Parses JSON responses, handles empty 204 responses, and converts failed responses into ApiError instances.
 async function parseResponse<T>(response: Response): Promise<T> {
   if (response.status === 204) {
     return undefined as T;
@@ -38,6 +40,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
   return payload;
 }
 
+// Sends a basic JSON request without auth retry logic. This is reused by token-refresh flow.
 async function rawRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
@@ -50,6 +53,7 @@ async function rawRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   return parseResponse<T>(response);
 }
 
+// Uses the stored refresh token to get a new JWT and keeps the local session in sync.
 export async function refreshStoredSession(): Promise<SessionState | null> {
   const session = readStoredSession();
   if (!session) return null;
@@ -76,6 +80,7 @@ export async function refreshStoredSession(): Promise<SessionState | null> {
   }
 }
 
+// Sends API requests with optional bearer auth and retries once after refreshing the token on 401.
 export async function apiRequest<T>(
   path: string,
   init: RequestInit = {},

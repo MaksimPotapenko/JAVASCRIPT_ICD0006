@@ -12,6 +12,7 @@ const form = reactive({
   password: "",
 });
 
+// Submits the login form through the auth store so navigation and error handling stay centralized.
 async function submit() {
   await authStore.login({ ...form });
 }
