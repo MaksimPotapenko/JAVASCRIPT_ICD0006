@@ -201,6 +201,10 @@ a {
   align-items: center;
 }
 
+.inline-actions {
+  margin-top: 8px;
+}
+
 .button {
   min-height: 44px;
   border: 0;
