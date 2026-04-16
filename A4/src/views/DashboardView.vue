@@ -3,19 +3,23 @@ import { computed, onMounted, reactive } from "vue";
 
 import { useTodoStore } from "@/stores/todos";
 
+/** Exposes Todo collections and CRUD actions for the protected dashboard. */
 const todoStore = useTodoStore();
 
+/** Stores the editable category form fields before a category is created. */
 const categoryForm = reactive({
   categoryName: "",
   categorySort: 0,
   tag: "",
 });
 
+/** Stores the editable priority form fields before a priority is created. */
 const priorityForm = reactive({
   priorityName: "",
   prioritySort: 0,
 });
 
+/** Stores the editable task form fields before a task is created. */
 const taskForm = reactive({
   taskName: "",
   taskSort: 0,
@@ -26,46 +30,59 @@ const taskForm = reactive({
   isArchived: false,
 });
 
+/** Enables task creation only after both required foreign-key selections are made. */
 const canCreateTask = computed(() => Boolean(taskForm.todoCategoryId && taskForm.todoPriorityId));
 
 onMounted(async () => {
   await todoStore.loadAll();
 
+  // After the first load, preselect the first available category to reduce required clicks.
   if (!taskForm.todoCategoryId && todoStore.categories[0]) {
     taskForm.todoCategoryId = todoStore.categories[0].id;
   }
 
+  // Do the same for priorities so the task form becomes usable immediately.
   if (!taskForm.todoPriorityId && todoStore.priorities[0]) {
     taskForm.todoPriorityId = todoStore.priorities[0].id;
   }
 });
 
-// Creates a category from the form and keeps the category select ready for the next task.
+/**
+ * Creates a category from the form and keeps the category select ready for the next task.
+ */
 async function submitCategory() {
   await todoStore.addCategory({ ...categoryForm });
+  // Reset the create form after a successful request so the user can add another category.
   categoryForm.categoryName = "";
   categoryForm.categorySort = todoStore.categories.length;
   categoryForm.tag = "";
 
   if (!taskForm.todoCategoryId && todoStore.categories[0]) {
+    // If task creation had no category selected yet, use the newly available category list.
     taskForm.todoCategoryId = todoStore.categories[0].id;
   }
 }
 
-// Creates a priority from the form and updates the default task priority selection when needed.
+/**
+ * Creates a priority from the form and updates the default task priority selection when needed.
+ */
 async function submitPriority() {
   await todoStore.addPriority({ ...priorityForm });
   priorityForm.priorityName = "";
   priorityForm.prioritySort = todoStore.priorities.length;
 
   if (!taskForm.todoPriorityId && todoStore.priorities[0]) {
+    // If task creation had no priority selected yet, use the first available priority.
     taskForm.todoPriorityId = todoStore.priorities[0].id;
   }
 }
 
-// Creates a task and resets the form while preserving selected category and priority values.
+/**
+ * Creates a task and resets the form while preserving selected category and priority values.
+ */
 async function submitTask() {
   await todoStore.addTask({ ...taskForm });
+  // Clear only the transient fields and keep selected relations for faster repeated entry.
   taskForm.taskName = "";
   taskForm.taskSort = todoStore.tasks.length;
   taskForm.dueDt = "";
@@ -73,26 +90,35 @@ async function submitTask() {
   taskForm.isArchived = false;
 }
 
-// Resolves a category name for task cards from the currently loaded category list.
+/**
+ * Resolves a category name for task cards from the currently loaded category list.
+ */
 function categoryLabel(categoryId: string) {
   return todoStore.categories.find((item) => item.id === categoryId)?.categoryName ?? "Unknown";
 }
 
-// Resolves a priority name for task cards from the currently loaded priority list.
+/**
+ * Resolves a priority name for task cards from the currently loaded priority list.
+ */
 function priorityLabel(priorityId: string) {
   return todoStore.priorities.find((item) => item.id === priorityId)?.priorityName ?? "Unknown";
 }
 
-// Formats API date strings into a readable local date/time label for the UI.
+/**
+ * Formats API date strings into a readable local date/time label for the UI.
+ */
 function formatDate(value?: string | null) {
   if (!value) return "No due date";
   return new Date(value).toLocaleString();
 }
 
-// Converts stored ISO dates into the local datetime-local input format expected by the browser.
+/**
+ * Converts stored ISO dates into the local datetime-local input format expected by the browser.
+ */
 function dueDateInputValue(value?: string | null) {
   if (!value) return "";
   const date = new Date(value);
+  // datetime-local expects local time without timezone, so we offset the stored UTC value first.
   const timezoneOffset = date.getTimezoneOffset() * 60_000;
   return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 16);
 }

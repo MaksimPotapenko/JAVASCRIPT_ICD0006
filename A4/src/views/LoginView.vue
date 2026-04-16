@@ -5,14 +5,18 @@ import { RouterLink } from "vue-router";
 import AuthCard from "@/components/AuthCard.vue";
 import { useAuthStore } from "@/stores/auth";
 
+/** Exposes auth actions and state for the login screen. */
 const authStore = useAuthStore();
 
+/** Stores the editable login form fields before they are submitted to the auth store. */
 const form = reactive({
   email: "",
   password: "",
 });
 
-// Submits the login form through the auth store so navigation and error handling stay centralized.
+/**
+ * Submits the login form through the auth store so navigation and error handling stay centralized.
+ */
 async function submit() {
   await authStore.login({ ...form });
 }

@@ -5,6 +5,9 @@ import LoginView from "@/views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import { readStoredSession } from "@/services/session";
 
+/**
+ * Defines the client-side routes and connects them to the corresponding Vue views.
+ */
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -15,15 +18,19 @@ const router = createRouter({
   ],
 });
 
-// Protects the dashboard from guests and redirects authenticated users away from guest-only routes.
+/**
+ * Protects the dashboard from guests and redirects authenticated users away from guest-only routes.
+ */
 router.beforeEach((to) => {
   const hasSession = Boolean(readStoredSession()?.token);
 
   if (to.meta.requiresAuth && !hasSession) {
+    // Guests may not enter protected routes like the dashboard.
     return { name: "login" };
   }
 
   if (to.meta.guestOnly && hasSession) {
+    // Authenticated users should not stay on login/register screens.
     return { name: "dashboard" };
   }
 

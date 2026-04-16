@@ -4,12 +4,17 @@ import { useRoute } from "vue-router";
 
 import { useAuthStore } from "@/stores/auth";
 
+/** Holds reactive auth state for the app shell header and logout action. */
 const authStore = useAuthStore();
+/** Exposes the current route so the shell can adjust itself on auth pages. */
 const route = useRoute();
 
+/** Tells the shell whether the current page is one of the guest auth routes. */
 const isAuthRoute = computed(() => route.name === "login" || route.name === "register");
 
-// Delegates logout to the auth store so token cleanup and routing happen in one place.
+/**
+ * Delegates logout to the auth store so token cleanup and routing happen in one place.
+ */
 function handleLogout() {
   authStore.logout();
 }

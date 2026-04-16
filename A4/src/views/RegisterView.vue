@@ -5,8 +5,10 @@ import { RouterLink } from "vue-router";
 import AuthCard from "@/components/AuthCard.vue";
 import { useAuthStore } from "@/stores/auth";
 
+/** Exposes auth actions and state for the registration screen. */
 const authStore = useAuthStore();
 
+/** Stores the editable registration form fields before they are submitted to the auth store. */
 const form = reactive({
   email: "",
   password: "",
@@ -14,7 +16,9 @@ const form = reactive({
   lastName: "",
 });
 
-// Submits the registration form through the auth store and lets the store handle session setup.
+/**
+ * Submits the registration form through the auth store and lets the store handle session setup.
+ */
 async function submit() {
   await authStore.register({ ...form });
 }
