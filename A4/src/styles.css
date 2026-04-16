@@ -216,6 +216,13 @@ a {
   cursor: pointer;
 }
 
+.nav-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 .button:disabled {
   opacity: 0.65;
   cursor: not-allowed;

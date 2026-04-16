@@ -32,11 +32,15 @@ function handleLogout() {
           <span>{{ authStore.fullName }}</span>
           <small>{{ authStore.email }}</small>
         </div>
+        <a class="button ghost nav-link-button" href="https://mpotap.proxy.itcollege.ee/">Back to main page</a>
         <button class="button ghost" type="button" @click="handleLogout">Log out</button>
       </div>
-      <div v-else-if="!isAuthRoute" class="identity-card">
-        <span>Guest</span>
-        <small>Authentication required</small>
+      <div v-else class="topbar-actions">
+        <div v-if="!isAuthRoute" class="identity-card">
+          <span>Guest</span>
+          <small>Authentication required</small>
+        </div>
+        <a class="button ghost nav-link-button" href="https://mpotap.proxy.itcollege.ee/">Back to main page</a>
       </div>
     </header>
 
