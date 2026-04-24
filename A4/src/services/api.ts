@@ -4,7 +4,7 @@ import { clearStoredSession, readStoredSession, writeStoredSession } from "@/ser
 /**
  * Holds the backend base URL and allows overriding it through a Vite env variable.
  */
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "https://taltech.akaver.com/api/v1";
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "/a6/api/v1";
 
 export class ApiError extends Error {
   status: number;

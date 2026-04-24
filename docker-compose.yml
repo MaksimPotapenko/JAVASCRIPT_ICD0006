@@ -8,6 +8,7 @@ services:
     depends_on:
       - a4
       - a5
+      - a6
   a4:
     build: ./A4
     container_name: mpotap-javascript-a4
@@ -16,3 +17,12 @@ services:
     build: ./A5
     container_name: mpotap-javascript-a5
     restart: unless-stopped
+  a6:
+    build: ./A6
+    container_name: mpotap-javascript-a6
+    restart: unless-stopped
+    volumes:
+      - a6-data:/app/data
+
+volumes:
+  a6-data:
