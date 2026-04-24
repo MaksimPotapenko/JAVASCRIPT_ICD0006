@@ -1,0 +1,256 @@
+:root {
+  color-scheme: light;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #1f2933;
+  background:
+    radial-gradient(circle at top left, rgba(250, 204, 21, 0.35), transparent 30%),
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.25), transparent 30%),
+    linear-gradient(180deg, #fff8e8 0%, #f2f7fb 50%, #edf3f7 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+a {
+  color: #0f766e;
+  text-decoration: none;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.9rem 1.2rem;
+  background: linear-gradient(135deg, #0f766e, #0ea5e9);
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+input,
+select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  padding: 0.8rem 0.95rem;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+label span {
+  font-size: 0.85rem;
+  color: #52606d;
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  color: #0f766e;
+}
+
+.route-status,
+.panel-hint,
+.form-error {
+  border-radius: 18px;
+  padding: 0.95rem 1rem;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.form-error {
+  color: #9f1239;
+  background: rgba(255, 228, 230, 0.92);
+}
+
+.auth-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 0.9fr;
+  gap: 2rem;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.auth-hero,
+.auth-card,
+.panel,
+.session-card,
+.status-strip {
+  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+}
+
+.auth-hero {
+  border-radius: 32px;
+  padding: 3rem;
+}
+
+.auth-hero h1,
+.dashboard-hero h1 {
+  margin: 0 0 1rem;
+  font-size: clamp(2.2rem, 4vw, 4.5rem);
+  line-height: 0.95;
+}
+
+.hero-points {
+  margin: 1.5rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.auth-card {
+  border-radius: 28px;
+  padding: 2rem;
+}
+
+.auth-card-header h2,
+.panel-header h2 {
+  margin: 0;
+  font-size: 1.45rem;
+}
+
+.auth-card-header p,
+.panel-header p,
+.auth-footer,
+.dashboard-hero p,
+.status-strip,
+.session-card span {
+  color: #52606d;
+}
+
+.auth-form,
+.stack-form,
+.task-form,
+.entity-list,
+.dashboard-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.dashboard-layout {
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.dashboard-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: end;
+  margin-bottom: 1.5rem;
+}
+
+.hero-actions {
+  display: grid;
+  gap: 1rem;
+  justify-items: end;
+}
+
+.session-card {
+  display: grid;
+  gap: 0.2rem;
+  border-radius: 22px;
+  padding: 1rem 1.2rem;
+}
+
+.status-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  border-radius: 22px;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+}
+
+.dashboard-error {
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+.panel {
+  border-radius: 28px;
+  padding: 1.4rem;
+}
+
+.panel-wide {
+  grid-column: 1 / -1;
+}
+
+.panel-header {
+  margin-bottom: 1rem;
+}
+
+.entity-card {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  border-radius: 22px;
+  background: rgba(248, 250, 252, 0.95);
+  border: 1px solid #dbe4ee;
+}
+
+.task-card {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: end;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.checkbox input {
+  width: auto;
+}
+
+.danger-button {
+  background: linear-gradient(135deg, #be123c, #f97316);
+}
+
+@media (max-width: 960px) {
+  .auth-layout,
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-hero,
+  .status-strip,
+  .task-card {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .hero-actions {
+    justify-items: stretch;
+  }
+}

@@ -10,6 +10,7 @@ Assuming the course proxy hostname follows the student id `mpotap`, the deployed
 - `https://mpotap.proxy.itcollege.ee/a1/`
 - `https://mpotap.proxy.itcollege.ee/a2/`
 - `https://mpotap.proxy.itcollege.ee/a4/`
+- `https://mpotap.proxy.itcollege.ee/a5/`
 
 If your assigned proxy hostname differs, replace `mpotap` with your actual uni-id/host from `admin.proxy.itcollege.ee`.
 
@@ -18,6 +19,7 @@ If your assigned proxy hostname differs, replace `mpotap` with your actual uni-i
 - `A1/` - Assignment 1, browser task manager in vanilla JavaScript
 - `A2/` - Assignment 2, TypeScript migration and feature expansion
 - `A4/` - Assignment 4, Vue 3 Todo client with JWT + refresh token auth, router, and Pinia
+- `A5/` - Assignment 5, React Todo client with JWT + refresh token auth, Context, and reducers
 - `deploy/` - nginx landing page and server configuration for VPS deployment
 
 ## Deployment Setup
@@ -25,10 +27,10 @@ If your assigned proxy hostname differs, replace `mpotap` with your actual uni-i
 This repository is prepared for the course VPS deployment model from the lecture:
 
 - `Dockerfile` builds a single nginx image that serves both assignments
-- `docker-compose.yml` exposes the public nginx container on port `80` and runs `A4` as a separate container behind it
+- `docker-compose.yml` exposes the public nginx container on port `80` and runs `A4` and `A5` as separate containers behind it
 - `.gitlab-ci.yml` deploys on pushes to `main` with `docker compose`
 - `deploy/index.html` is the landing page at `/`
-- `deploy/nginx.conf` routes `/a1/` and `/a2/` to static folders and reverse-proxies `/a4/` to the Vue container
+- `deploy/nginx.conf` routes `/a1/` and `/a2/` to static folders and reverse-proxies `/a4/` and `/a5/` to dedicated frontend containers
 
 ## VPS / GitLab Runner Steps
 
@@ -70,6 +72,18 @@ The deployed TypeScript app is served from `/a2/` inside the same nginx containe
 - CRUD for Todo categories, priorities, and tasks
 
 The deployed Vue app is served at `https://mpotap.proxy.itcollege.ee/a4/` through a separate Docker container proxied by the public nginx container.
+
+## Assignment 5
+
+`A5` is a React + TypeScript Todo client that targets `https://taltech.akaver.com/api/v1` and implements:
+
+- JWT login and register flows
+- refresh-token based session renewal
+- React Context state management with reducers
+- React Router protected routes without property drilling
+- CRUD for Todo categories, priorities, and tasks
+
+The deployed React app is served at `https://mpotap.proxy.itcollege.ee/a5/` through a separate Docker container proxied by the public nginx container.
 
 ## AI Assistance
 

@@ -7,7 +7,12 @@ services:
     restart: unless-stopped
     depends_on:
       - a4
+      - a5
   a4:
     build: ./A4
     container_name: mpotap-javascript-a4
+    restart: unless-stopped
+  a5:
+    build: ./A5
+    container_name: mpotap-javascript-a5
     restart: unless-stopped
