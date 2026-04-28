@@ -12,6 +12,7 @@ Assuming the course proxy hostname follows the student id `mpotap`, the deployed
 - `https://mpotap.proxy.itcollege.ee/a4/`
 - `https://mpotap.proxy.itcollege.ee/a5/`
 - `https://mpotap.proxy.itcollege.ee/a6/api/v1/health`
+- `https://mpotap.proxy.itcollege.ee/a7/`
 
 If your assigned proxy hostname differs, replace `mpotap` with your actual uni-id/host from `admin.proxy.itcollege.ee`.
 
@@ -22,6 +23,7 @@ If your assigned proxy hostname differs, replace `mpotap` with your actual uni-i
 - `A4/` - Assignment 4, Vue 3 Todo client with JWT + refresh token auth, router, and Pinia
 - `A5/` - Assignment 5, React Todo client with JWT + refresh token auth, Context, and reducers
 - `A6/` - Assignment 6, Express.js Todo backend with JWT + refresh token auth
+- `A7/` - Assignment 7, Vue full client app on top of the local A6 backend
 - `deploy/` - nginx landing page and server configuration for VPS deployment
 
 ## Deployment Setup
@@ -29,10 +31,10 @@ If your assigned proxy hostname differs, replace `mpotap` with your actual uni-i
 This repository is prepared for the course VPS deployment model from the lecture:
 
 - `Dockerfile` builds a single nginx image that serves both assignments
-- `docker-compose.yml` exposes the public nginx container on port `80` and runs `A4`, `A5`, and `A6` as separate containers behind it
+- `docker-compose.yml` exposes the public nginx container on port `80` and runs `A4`, `A5`, `A6`, and `A7` as separate containers behind it
 - `.gitlab-ci.yml` deploys on pushes to `main` with `docker compose`
 - `deploy/index.html` is the landing page at `/`
-- `deploy/nginx.conf` routes `/a1/` and `/a2/` to static folders and reverse-proxies `/a4/`, `/a5/`, and `/a6/api/` to dedicated containers
+- `deploy/nginx.conf` routes `/a1/` and `/a2/` to static folders and reverse-proxies `/a4/`, `/a5/`, `/a6/api/`, and `/a7/` to dedicated containers
 
 ## VPS / GitLab Runner Steps
 
@@ -97,6 +99,18 @@ The deployed React app is served at `https://mpotap.proxy.itcollege.ee/a5/` thro
 - JSON file persistence inside a dedicated Docker volume
 
 The deployed Express API is served at `https://mpotap.proxy.itcollege.ee/a6/api/v1/`, with a health endpoint at `https://mpotap.proxy.itcollege.ee/a6/api/v1/health`.
+
+## Assignment 7
+
+`A7` is a Vue 3 + TypeScript full client app that targets the local `A6` backend at `/a6/api/v1` and implements:
+
+- JWT login and register flows
+- refresh-token based session renewal
+- Vue Router route protection
+- Pinia state management
+- CRUD for Todo categories, priorities, and tasks
+
+The deployed Vue app is served at `https://mpotap.proxy.itcollege.ee/a7/`.
 
 ## AI Assistance
 

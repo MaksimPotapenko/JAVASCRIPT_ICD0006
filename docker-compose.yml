@@ -9,6 +9,7 @@ services:
       - a4
       - a5
       - a6
+      - a7
   a4:
     build: ./A4
     container_name: mpotap-javascript-a4
@@ -23,6 +24,10 @@ services:
     restart: unless-stopped
     volumes:
       - a6-data:/app/data
+  a7:
+    build: ./A7
+    container_name: mpotap-javascript-a7
+    restart: unless-stopped
 
 volumes:
   a6-data:
