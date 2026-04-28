@@ -23,16 +23,18 @@ function handleLogout() {
 <template>
   <div class="shell">
     <header class="topbar">
-      <div>
+      <div class="brand-block">
         <p class="eyebrow">Assignment 7</p>
-        <h1>Vue Full Client App</h1>
+        <h1>Northstar Workspace</h1>
+        <p class="brand-copy">A polished Vue client for your own A6 API, shaped like a small product workspace instead of a coursework clone.</p>
       </div>
       <div v-if="authStore.isAuthenticated" class="topbar-actions">
         <div class="identity-card">
           <span>{{ authStore.fullName }}</span>
           <small>{{ authStore.email }}</small>
         </div>
-        <a class="button ghost nav-link-button" href="https://mpotap.proxy.itcollege.ee/">Back to main page</a>
+        <div class="header-pill">Vue 3 + Pinia + A6</div>
+        <a class="button ghost nav-link-button" href="https://mpotap.proxy.itcollege.ee/">Main hub</a>
         <button class="button ghost" type="button" @click="handleLogout">Log out</button>
       </div>
       <div v-else class="topbar-actions">
@@ -40,7 +42,8 @@ function handleLogout() {
           <span>Guest</span>
           <small>Authentication required</small>
         </div>
-        <a class="button ghost nav-link-button" href="https://mpotap.proxy.itcollege.ee/">Back to main page</a>
+        <div class="header-pill">Full client app</div>
+        <a class="button ghost nav-link-button" href="https://mpotap.proxy.itcollege.ee/">Main hub</a>
       </div>
     </header>
 

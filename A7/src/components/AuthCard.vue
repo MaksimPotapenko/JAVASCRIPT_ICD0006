@@ -7,7 +7,8 @@ defineProps<{
 
 <template>
   <section class="auth-card">
-    <p class="eyebrow">A6 Backend</p>
+    <div class="auth-card-badge">A6 backend connected</div>
+    <p class="eyebrow">Northstar Access</p>
     <h2>{{ title }}</h2>
     <p class="auth-intro">{{ intro }}</p>
     <slot />

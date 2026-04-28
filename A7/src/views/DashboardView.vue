@@ -127,25 +127,31 @@ function dueDateInputValue(value?: string | null) {
 <template>
   <section class="dashboard">
     <div class="hero-panel">
-      <div>
-        <p class="eyebrow">Protected Workspace</p>
-        <h2>JWT + refresh-token full client</h2>
+      <div class="hero-copy-block">
+        <p class="eyebrow">Operations Dashboard</p>
+        <h2>Personal task system on your own API</h2>
         <p class="hero-copy">
-          This Vue 3 app uses router guards, Pinia state, bearer auth, and refresh-token renewal against your A6 backend.
+          Northstar turns the coursework Todo domain into a compact dashboard app with reusable entities, protected routes, and direct control over the full request flow.
         </p>
+        <div class="hero-tags">
+          <span>JWT auth</span>
+          <span>Refresh rotation</span>
+          <span>Vue Router</span>
+          <span>Pinia state</span>
+        </div>
       </div>
       <div class="hero-stats">
         <article>
           <strong>{{ todoStore.activeTasks.length }}</strong>
-          <span>Active tasks</span>
+          <span>Open work</span>
         </article>
         <article>
           <strong>{{ todoStore.categories.length }}</strong>
-          <span>Categories</span>
+          <span>Work lanes</span>
         </article>
         <article>
           <strong>{{ todoStore.priorities.length }}</strong>
-          <span>Priorities</span>
+          <span>Priority tiers</span>
         </article>
       </div>
     </div>
@@ -154,7 +160,13 @@ function dueDateInputValue(value?: string | null) {
 
     <div class="grid dashboard-grid">
       <section class="panel">
-        <h3>Create category</h3>
+        <div class="panel-title-row">
+          <div>
+            <p class="section-kicker">Entity Studio</p>
+            <h3>Create category</h3>
+          </div>
+          <span class="panel-chip">Structure</span>
+        </div>
         <form class="stack" @submit.prevent="submitCategory">
           <label class="field">
             <span>Name</span>
@@ -189,7 +201,13 @@ function dueDateInputValue(value?: string | null) {
       </section>
 
       <section class="panel">
-        <h3>Create priority</h3>
+        <div class="panel-title-row">
+          <div>
+            <p class="section-kicker">Entity Studio</p>
+            <h3>Create priority</h3>
+          </div>
+          <span class="panel-chip">Urgency</span>
+        </div>
         <form class="stack" @submit.prevent="submitPriority">
           <label class="field">
             <span>Name</span>
@@ -218,7 +236,13 @@ function dueDateInputValue(value?: string | null) {
     </div>
 
     <section class="panel wide-panel">
-      <h3>Create task</h3>
+      <div class="panel-title-row">
+        <div>
+          <p class="section-kicker">Composer</p>
+          <h3>Create task</h3>
+        </div>
+        <span class="panel-chip">Execution</span>
+      </div>
       <form class="grid task-form-grid" @submit.prevent="submitTask">
         <label class="field task-name-field">
           <span>Task name</span>
@@ -271,7 +295,13 @@ function dueDateInputValue(value?: string | null) {
 
     <div class="grid dashboard-grid">
       <section class="panel">
-        <h3>Active tasks</h3>
+        <div class="panel-title-row">
+          <div>
+            <p class="section-kicker">Live Queue</p>
+            <h3>Active tasks</h3>
+          </div>
+          <span class="panel-chip">{{ todoStore.activeTasks.length }} open</span>
+        </div>
         <div class="list stack">
           <article v-for="task in todoStore.activeTasks" :key="task.id" class="list-card">
             <div class="stack compact">
@@ -317,7 +347,13 @@ function dueDateInputValue(value?: string | null) {
       </section>
 
       <section class="panel">
-        <h3>Archived tasks</h3>
+        <div class="panel-title-row">
+          <div>
+            <p class="section-kicker">History</p>
+            <h3>Archived tasks</h3>
+          </div>
+          <span class="panel-chip">{{ todoStore.archivedTasks.length }} stored</span>
+        </div>
         <div class="list stack">
           <article v-for="task in todoStore.archivedTasks" :key="task.id" class="list-card muted">
             <div class="stack compact">

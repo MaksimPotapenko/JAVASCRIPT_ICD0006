@@ -27,7 +27,7 @@ async function submit() {
 <template>
   <AuthCard
     title="Create account"
-    intro="Registration returns both a JWT and refresh token immediately, so the app can continue directly into the protected workspace on your own backend."
+    intro="Create a local account for the Northstar workspace. Registration returns both a JWT and refresh token immediately so the app can enter the protected area without another login step."
   >
     <form class="stack" @submit.prevent="submit">
       <div class="grid two-up">

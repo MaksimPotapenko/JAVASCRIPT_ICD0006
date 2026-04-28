@@ -25,7 +25,7 @@ async function submit() {
 <template>
   <AuthCard
     title="Sign in"
-    intro="Use your local A6 Todo account. Access tokens are stored with a refresh token and renewed automatically on 401 responses."
+    intro="Sign in to the Northstar workspace. Sessions are protected with JWTs, backed by refresh-token renewal, and routed through your own A6 backend."
   >
     <form class="stack" @submit.prevent="submit">
       <label class="field">
