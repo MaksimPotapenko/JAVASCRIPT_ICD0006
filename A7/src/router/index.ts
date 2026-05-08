@@ -1,37 +1,47 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-import DashboardView from "@/views/DashboardView.vue";
-import LoginView from "@/views/LoginView.vue";
-import RegisterView from "@/views/RegisterView.vue";
 import { readStoredSession } from "@/services/session";
+import HomeView from "@/views/HomeView.vue";
+import LoginView from "@/views/LoginView.vue";
+import OrganiserView from "@/views/OrganiserView.vue";
+import RegisterView from "@/views/RegisterView.vue";
+import ResultsView from "@/views/ResultsView.vue";
+import TeamDetailView from "@/views/TeamDetailView.vue";
+import EventView from "@/views/EventView.vue";
 
-/**
- * Defines the client-side routes and connects them to the corresponding Vue views.
- */
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: "/", redirect: "/app" },
+    { path: "/", name: "home", component: HomeView },
     { path: "/login", name: "login", component: LoginView, meta: { guestOnly: true } },
     { path: "/register", name: "register", component: RegisterView, meta: { guestOnly: true } },
-    { path: "/app", name: "dashboard", component: DashboardView, meta: { requiresAuth: true } },
+    { path: "/events/:contestId", name: "event", component: EventView, props: true },
+    { path: "/events/:contestId/results", name: "results", component: ResultsView, props: true },
+    { path: "/events/:contestId/teams/:teamId", name: "team-detail", component: TeamDetailView, props: true },
+    { path: "/organiser", name: "organiser", component: OrganiserView, meta: { requiresOrganiser: true } },
   ],
 });
 
-/**
- * Protects the dashboard from guests and redirects authenticated users away from guest-only routes.
- */
 router.beforeEach((to) => {
-  const hasSession = Boolean(readStoredSession()?.token);
+  const session = readStoredSession();
 
-  if (to.meta.requiresAuth && !hasSession) {
-    // Guests may not enter protected routes like the dashboard.
-    return { name: "login" };
+  if (to.meta.guestOnly && session?.jwt) {
+    return { name: "home" };
   }
 
-  if (to.meta.guestOnly && hasSession) {
-    // Authenticated users should not stay on login/register screens.
-    return { name: "dashboard" };
+  if (to.meta.requiresOrganiser) {
+    if (!session?.jwt) {
+      return { name: "login", query: { next: to.fullPath } };
+    }
+
+    const payload = JSON.parse(atob(session.jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))) as Record<string, unknown>;
+    const roles = [payload.role, payload.roles, payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]]
+      .flatMap((entry) => (Array.isArray(entry) ? entry : [entry]))
+      .filter((entry): entry is string => typeof entry === "string");
+
+    if (!roles.includes("organiser")) {
+      return { name: "home" };
+    }
   }
 
   return true;

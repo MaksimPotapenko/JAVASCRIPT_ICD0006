@@ -1,36 +1,77 @@
-import type { SessionState } from "@/types/api";
+import type { AuthSession } from "@/types/nutikas";
 
-/**
- * Identifies the localStorage entry that persists the current auth session.
- */
-const STORAGE_KEY = "assignment7-session";
+const storageKey = "a7-nutikas-session";
 
-/**
- * Restores the saved session from localStorage and drops corrupted data if parsing fails.
- */
-export function readStoredSession(): SessionState | null {
-  const rawValue = localStorage.getItem(STORAGE_KEY);
-  if (!rawValue) return null;
+export function readStoredSession(): AuthSession | null {
+  const raw = window.localStorage.getItem(storageKey);
+
+  if (!raw) {
+    return null;
+  }
 
   try {
-    return JSON.parse(rawValue) as SessionState;
+    return JSON.parse(raw) as AuthSession;
   } catch {
-    // Remove invalid JSON so the app does not keep failing on every page load.
-    localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(storageKey);
     return null;
   }
 }
 
-/**
- * Persists the current session so auth survives a page refresh.
- */
-export function writeStoredSession(session: SessionState) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+export function writeStoredSession(session: AuthSession): void {
+  window.localStorage.setItem(storageKey, JSON.stringify(session));
+  window.dispatchEvent(new CustomEvent("a7-session-updated"));
 }
 
-/**
- * Removes the saved session from localStorage.
- */
-export function clearStoredSession() {
-  localStorage.removeItem(STORAGE_KEY);
+export function clearStoredSession(): void {
+  window.localStorage.removeItem(storageKey);
+  window.dispatchEvent(new CustomEvent("a7-session-updated"));
+}
+
+export function decodeJwtPayload(token: string): Record<string, unknown> {
+  try {
+    const [, payload] = token.split(".");
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const parsed = window.atob(normalized);
+    return JSON.parse(parsed) as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+}
+
+export function extractRoles(token: string): string[] {
+  const payload = decodeJwtPayload(token);
+  const roleKeys = [
+    "role",
+    "roles",
+    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+  ];
+
+  return roleKeys.flatMap((key) => {
+    const value = payload[key];
+
+    if (typeof value === "string") {
+      return [value];
+    }
+
+    if (Array.isArray(value)) {
+      return value.filter((entry): entry is string => typeof entry === "string");
+    }
+
+    return [];
+  });
+}
+
+export function extractEmail(token: string): string | null {
+  const payload = decodeJwtPayload(token);
+  const keys = ["email", "unique_name", "sub"];
+
+  for (const key of keys) {
+    const value = payload[key];
+
+    if (typeof value === "string" && value.length > 0) {
+      return value;
+    }
+  }
+
+  return null;
 }

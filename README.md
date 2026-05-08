@@ -23,7 +23,7 @@ If your assigned proxy hostname differs, replace `mpotap` with your actual uni-i
 - `A4/` - Assignment 4, Vue 3 Todo client with JWT + refresh token auth, router, and Pinia
 - `A5/` - Assignment 5, React Todo client with JWT + refresh token auth, Context, and reducers
 - `A6/` - Assignment 6, Express.js Todo backend with JWT + refresh token auth
-- `A7/` - Assignment 7, Vue full client app on top of the local A6 backend
+- `A7/` - Assignment 7, Vue Nutikas client implementing both user and organiser flows
 - `deploy/` - nginx landing page and server configuration for VPS deployment
 
 ## Deployment Setup
@@ -102,13 +102,12 @@ The deployed Express API is served at `https://mpotap.proxy.itcollege.ee/a6/api/
 
 ## Assignment 7
 
-`A7` is a Vue 3 + TypeScript full client app that targets the local `A6` backend at `/a6/api/v1` and implements:
+`A7` is a Vue 3 + TypeScript full client app that targets `https://nutikas.akaver.com/api/v1` and implements both Nutikas flows:
 
 - JWT login and register flows
 - refresh-token based session renewal
-- Vue Router route protection
-- Pinia state management
-- CRUD for Todo categories, priorities, and tasks
+- user flow for contest browsing, team registration, QR-based markings, results, and team track view
+- organiser flow for contests, classes, checkpoints, QR print sheets, teams, members, and markings
 
 The deployed Vue app is served at `https://mpotap.proxy.itcollege.ee/a7/`.
 

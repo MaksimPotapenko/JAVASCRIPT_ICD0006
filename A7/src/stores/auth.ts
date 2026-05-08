@@ -1,117 +1,84 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
-import { useRouter } from "vue-router";
 
-import { login, logout, register } from "@/services/auth";
-import { refreshStoredSession } from "@/services/api";
-import { readStoredSession } from "@/services/session";
-import type { LoginPayload, RegisterPayload, SessionState } from "@/types/api";
+import { loginUser, logoutUser, registerUser } from "@/services/nutikas";
+import { clearStoredSession, extractEmail, extractRoles, readStoredSession, writeStoredSession } from "@/services/session";
+import type { AuthSession, LoginInfo, RegisterInfo } from "@/types/nutikas";
 
-/**
- * Centralizes auth state, route redirects, and auth-related actions for the whole app.
- */
 export const useAuthStore = defineStore("auth", () => {
-  /**
-   * Gives auth actions access to navigation after login, logout, and refresh failures.
-   */
-  const router = useRouter();
-  /**
-   * Holds the persisted session restored from localStorage when the app starts.
-   */
-  const session = ref<SessionState | null>(readStoredSession());
-  /**
-   * Tracks whether an auth action is currently in progress.
-   */
-  const isLoading = ref(false);
-  /**
-   * Stores the latest auth-related error message for the UI.
-   */
-  const error = ref("");
+  const session = ref<AuthSession | null>(readStoredSession());
+  const busy = ref(false);
 
-  /**
-   * Tells the UI whether a valid JWT is currently available.
-   */
-  const isAuthenticated = computed(() => Boolean(session.value?.token));
-  /**
-   * Builds a readable full name from the stored session data.
-   */
-  const fullName = computed(() => {
-    if (!session.value) return "";
-    return `${session.value.firstName} ${session.value.lastName}`.trim();
-  });
-  /**
-   * Exposes the authenticated user's email for header display.
-   */
-  const email = computed(() => session.value?.email ?? "");
+  const isAuthenticated = computed(() => Boolean(session.value?.jwt));
+  const roles = computed(() => (session.value?.jwt ? extractRoles(session.value.jwt) : []));
+  const email = computed(() => (session.value?.jwt ? extractEmail(session.value.jwt) : null));
+  const isOrganiser = computed(() => roles.value.includes("organiser"));
 
-  /**
-   * Logs in the user, updates store state, and redirects into the protected dashboard.
-   */
-  async function loginUser(payload: LoginPayload) {
-    isLoading.value = true;
-    // Clear stale UI errors before starting a new auth request.
-    error.value = "";
+  function hydrate(): void {
+    session.value = readStoredSession();
+  }
+
+  async function login(payload: LoginInfo): Promise<void> {
+    busy.value = true;
     try {
-      session.value = await login(payload);
-      // Navigation lives in the store so the form component stays minimal.
-      await router.push({ name: "dashboard" });
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : "Login failed";
-      throw err;
+      const response = await loginUser(payload);
+      persist(response.jwt, response.refreshToken);
     } finally {
-      isLoading.value = false;
+      busy.value = false;
     }
   }
 
-  /**
-   * Registers a new user account, stores the session, and redirects to the dashboard.
-   */
-  async function registerUser(payload: RegisterPayload) {
-    isLoading.value = true;
-    error.value = "";
+  async function register(payload: RegisterInfo): Promise<void> {
+    busy.value = true;
     try {
-      session.value = await register(payload);
-      // Successful registration leads directly into the protected workspace.
-      await router.push({ name: "dashboard" });
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : "Registration failed";
-      throw err;
+      const response = await registerUser(payload);
+      persist(response.jwt, response.refreshToken);
     } finally {
-      isLoading.value = false;
+      busy.value = false;
     }
   }
 
-  /**
-   * Restores the session with the refresh token and sends the user back to login if refresh fails.
-   */
-  async function refresh() {
-    session.value = await refreshStoredSession();
-    if (!session.value) {
-      // If refresh cannot recover the session, return to the public login route.
-      await router.push({ name: "login" });
+  async function logout(): Promise<void> {
+    const refreshToken = session.value?.refreshToken;
+    busy.value = true;
+
+    try {
+      if (refreshToken) {
+        await logoutUser(refreshToken);
+      }
+    } catch {
+      // Logging out locally is still better than leaving a broken session in storage.
+    } finally {
+      clearStoredSession();
+      session.value = null;
+      busy.value = false;
     }
   }
 
-  /**
-   * Clears auth state and returns the UI to the login route.
-   */
-  function logoutUser() {
-    logout();
-    session.value = null;
-    // Redirect after logout so protected screens are not left visible with stale state.
-    router.push({ name: "login" });
+  function persist(jwt: string | null, refreshToken: string | null): void {
+    if (!jwt || !refreshToken) {
+      throw new Error("Auth response did not contain tokens.");
+    }
+
+    const nextSession = { jwt, refreshToken };
+    writeStoredSession(nextSession);
+    session.value = nextSession;
+  }
+
+  if (typeof window !== "undefined") {
+    window.addEventListener("a7-session-updated", hydrate);
   }
 
   return {
+    busy,
     email,
-    error,
-    fullName,
+    hydrate,
     isAuthenticated,
-    isLoading,
+    isOrganiser,
+    login,
+    logout,
+    register,
+    roles,
     session,
-    login: loginUser,
-    logout: logoutUser,
-    refresh,
-    register: registerUser,
   };
 });
