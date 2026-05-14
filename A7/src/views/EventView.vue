@@ -3,6 +3,7 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { RouterLink } from "vue-router";
 
 import QrInputField from "@/components/QrInputField.vue";
+import EventMap from "@/components/EventMap.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useNutikasStore } from "@/stores/nutikas";
 import { formatDate } from "@/utils/format";
@@ -34,10 +35,16 @@ const contestUserTeams = computed(() => nutikasStore.userTeams[props.contestId] 
 const selectedActivation = computed(() =>
   selectedUserTeamId.value ? nutikasStore.activations[selectedUserTeamId.value] : null,
 );
+const mapCheckPoints = computed(() =>
+  authStore.isOrganiser
+    ? (nutikasStore.organiserCheckPoints[props.contestId] ?? []).map((item) => ({ ...item, source: "organiser" as const }))
+    : nutikasStore.publicCheckPoints[props.contestId] ?? [],
+);
 
 onMounted(async () => {
   await nutikasStore.loadContest(props.contestId);
   await nutikasStore.loadContestResults(props.contestId);
+  await nutikasStore.loadPublicCheckpointHints(props.contestId);
 
   if (authStore.isAuthenticated) {
     await nutikasStore.loadUserTeamsForContest(props.contestId);
@@ -277,5 +284,12 @@ function useMyLocation(): void {
         <p v-else class="empty-state">Results are not available for this contest yet.</p>
       </article>
     </section>
+
+    <EventMap
+      :checkpoints="mapCheckPoints"
+      :markings="selectedActivation?.markings ?? null"
+      title="Event map and active team track"
+      subtitle="Public results are used to infer known checkpoints for the event. If you sign in as an organiser, configured checkpoints are shown directly."
+    />
   </div>
 </template>

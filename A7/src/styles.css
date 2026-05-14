@@ -418,6 +418,35 @@ textarea {
   border-radius: 18px;
 }
 
+.map-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.map-filters label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.92rem;
+  color: var(--text-soft);
+}
+
+.map-filters input[type="checkbox"] {
+  width: auto;
+}
+
+.map-search {
+  width: min(220px, 100%);
+  margin-left: auto;
+}
+
+.map-caption {
+  margin: 0.85rem 0 0;
+}
+
 .map-panel text {
   fill: #0f2747;
   font-size: 11px;
@@ -465,6 +494,13 @@ textarea {
 .qr-card span {
   color: var(--text-soft);
   word-break: break-all;
+}
+
+.scanner-preview {
+  width: min(420px, 100%);
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: #07192d;
 }
 
 @media print {

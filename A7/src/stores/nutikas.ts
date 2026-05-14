@@ -40,6 +40,7 @@ import type {
   ContestDetails,
   ContestResults,
   ContestListItem,
+  MapCheckpointPoint,
   MarkingRequest,
   OrganisationItem,
   OrganiserAddUserTeamRequest,
@@ -73,6 +74,7 @@ export const useNutikasStore = defineStore("nutikas", () => {
   const organiserContests = ref<OrganiserContestDetails[]>([]);
   const organiserClasses = ref<Record<string, OrganiserContestClassDetails[]>>({});
   const organiserCheckPoints = ref<Record<string, OrganiserCheckPointDetails[]>>({});
+  const publicCheckPoints = ref<Record<string, MapCheckpointPoint[]>>({});
   const organiserTeams = ref<Record<string, OrganiserTeamDetails[]>>({});
   const organiserUserTeams = ref<Record<string, OrganiserUserTeamItem[]>>({});
   const organiserMarkings = ref<Record<string, OrganiserMarkingListItem[]>>({});
@@ -149,6 +151,30 @@ export const useNutikasStore = defineStore("nutikas", () => {
     organiserCheckPoints.value[contestId] = await run(() => fetchOrganiserCheckPoints(contestId), []);
     organiserTeams.value[contestId] = await run(() => fetchOrganiserTeams(contestId), []);
     organiserMarkings.value[contestId] = await run(() => fetchOrganiserMarkings(contestId), []);
+  }
+
+  async function loadPublicCheckpointHints(contestId: string): Promise<void> {
+    const results = contestResults.value[contestId] ?? await run(() => fetchContestResults(contestId));
+    contestResults.value[contestId] = results;
+
+    const details = await run(
+      () => Promise.all((results.teams ?? []).map((team) => fetchTeamResult(contestId, team.id))),
+      [],
+    );
+
+    publicCheckPoints.value[contestId] = deduplicateCheckpoints(
+      details.flatMap((team) => team.markings ?? []).map((marking) => ({
+        id: marking.checkPointId,
+        contestId,
+        cpid: marking.checkPointCPID,
+        cpCode: marking.checkPointCPCode,
+        checkPointType: marking.checkPointType,
+        score: marking.score,
+        lat: marking.lat,
+        lon: marking.lon,
+        source: "public-marking" as const,
+      })),
+    );
   }
 
   async function createContestClass(contestId: string, payload: OrganiserContestClassUpsertRequest): Promise<void> {
@@ -270,6 +296,7 @@ export const useNutikasStore = defineStore("nutikas", () => {
     loadOrganiserContestBundle,
     loadOrganiserHome,
     loadOrganiserTeamMembers,
+    loadPublicCheckpointHints,
     loadTeamResult,
     loadUserTeamActivationState,
     loadUserTeamsForContest,
@@ -282,6 +309,7 @@ export const useNutikasStore = defineStore("nutikas", () => {
     organiserOrganisations,
     organiserTeams,
     organiserUserTeams,
+    publicCheckPoints,
     registerContestTeam,
     removeCheckPoint,
     removeContest,
@@ -304,4 +332,23 @@ export const useNutikasStore = defineStore("nutikas", () => {
 
 function replaceById<T extends { id: string }>(items: T[] | undefined, id: string, nextValue: T): T[] {
   return (items ?? []).map((item) => (item.id === id ? nextValue : item));
+}
+
+function deduplicateCheckpoints(points: MapCheckpointPoint[]): MapCheckpointPoint[] {
+  const known = new Map<string, MapCheckpointPoint>();
+
+  for (const point of points) {
+    const current = known.get(point.id);
+
+    if (!current) {
+      known.set(point.id, point);
+      continue;
+    }
+
+    if ((!current.lat || !current.lon) && point.lat && point.lon) {
+      known.set(point.id, point);
+    }
+  }
+
+  return [...known.values()];
 }

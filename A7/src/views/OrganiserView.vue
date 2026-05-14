@@ -841,6 +841,11 @@ function toNullableIso(value: string): string | null {
       </article>
     </section>
 
-    <EventMap :checkpoints="checkPoints" :markings="markings" title="Organiser overview map" />
+    <EventMap
+      :checkpoints="checkPoints.map((item) => ({ ...item, source: 'organiser' as const }))"
+      :markings="markings"
+      title="Organiser overview map"
+      subtitle="Configured checkpoints and submitted markings can be filtered by type or hidden independently."
+    />
   </div>
 </template>

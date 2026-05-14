@@ -16,10 +16,15 @@ const authStore = useAuthStore();
 const nutikasStore = useNutikasStore();
 
 const team = computed(() => nutikasStore.teamResults[props.teamId]);
-const checkPoints = computed(() => nutikasStore.organiserCheckPoints[props.contestId] ?? []);
+const checkPoints = computed(() =>
+  authStore.isOrganiser
+    ? (nutikasStore.organiserCheckPoints[props.contestId] ?? []).map((item) => ({ ...item, source: "organiser" as const }))
+    : nutikasStore.publicCheckPoints[props.contestId] ?? [],
+);
 
 onMounted(async () => {
   await nutikasStore.loadTeamResult(props.contestId, props.teamId);
+  await nutikasStore.loadPublicCheckpointHints(props.contestId);
 
   if (authStore.isOrganiser) {
     await nutikasStore.loadOrganiserContestBundle(props.contestId);
@@ -61,7 +66,11 @@ onMounted(async () => {
       </dl>
     </section>
 
-    <EventMap :checkpoints="checkPoints" :markings="team?.markings" />
+    <EventMap
+      :checkpoints="checkPoints"
+      :markings="team?.markings"
+      subtitle="Filter checkpoints and track points to focus on starts, finishes, bonus points, or the travelled route only."
+    />
 
     <section class="panel">
       <div class="section-heading">

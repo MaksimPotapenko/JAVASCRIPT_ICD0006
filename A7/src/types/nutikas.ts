@@ -188,6 +188,18 @@ export interface OrganiserCheckPointDetails {
   lon: string | null;
 }
 
+export interface MapCheckpointPoint {
+  id: string;
+  contestId: string;
+  cpid: string | null;
+  cpCode: string | null;
+  checkPointType: number;
+  score: number;
+  lat: string | null;
+  lon: string | null;
+  source: "organiser" | "public-marking";
+}
+
 export interface OrganiserCheckPointUpsertRequest {
   cpid: string;
   cpCode: string;

@@ -18,11 +18,14 @@ const selectedTeamId = ref("");
 const results = computed(() => nutikasStore.contestResults[props.contestId]);
 const selectedTeam = computed(() => (selectedTeamId.value ? nutikasStore.teamResults[selectedTeamId.value] : null));
 const mapCheckPoints = computed(() =>
-  authStore.isOrganiser ? nutikasStore.organiserCheckPoints[props.contestId] ?? [] : [],
+  authStore.isOrganiser
+    ? (nutikasStore.organiserCheckPoints[props.contestId] ?? []).map((item) => ({ ...item, source: "organiser" as const }))
+    : nutikasStore.publicCheckPoints[props.contestId] ?? [],
 );
 
 onMounted(async () => {
   await nutikasStore.loadContestResults(props.contestId);
+  await nutikasStore.loadPublicCheckpointHints(props.contestId);
 
   const firstTeam = nutikasStore.contestResults[props.contestId]?.teams?.[0];
   if (firstTeam) {
@@ -107,6 +110,7 @@ watch(selectedTeamId, async (teamId) => {
           :checkpoints="mapCheckPoints"
           :markings="selectedTeam.markings"
           title="User track from point to point"
+          subtitle="Known checkpoints and track points for this event. When organiser access is available, configured checkpoints are shown; otherwise the map falls back to publicly observed checkpoints."
         />
       </article>
     </section>
