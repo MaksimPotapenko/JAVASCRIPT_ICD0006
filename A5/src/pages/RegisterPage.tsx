@@ -4,9 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { AuthShell } from "@/components/AuthShell";
 import { useAuth } from "@/context/AuthContext";
 
+/**
+ * Renders the registration form and signs the user into the protected app after success.
+ */
 export function RegisterPage() {
   const navigate = useNavigate();
   const { state, registerUser, clearError } = useAuth();
+  // Stores the editable registration fields before they are posted to the auth context.
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -14,12 +18,18 @@ export function RegisterPage() {
     password: "",
   });
 
+  /**
+   * Submits the registration payload and moves the newly created user into the dashboard.
+   */
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    // Prevent the browser from trying to submit and reload the page.
     event.preventDefault();
+    // Clear any previous visible auth error before attempting a new request.
     clearError();
 
     try {
       await registerUser(form);
+      // Registration returns tokens immediately, so the user can continue straight into the app.
       navigate("/app");
     } catch {
       // The auth context already stores the user-facing error message.
@@ -34,12 +44,14 @@ export function RegisterPage() {
       footerHref="/login"
       footerAction="Sign in"
     >
+      // The form itself stays intentionally small because the auth context owns the real workflow.
       <form className="auth-form" onSubmit={handleSubmit}>
         <label>
           <span>First name</span>
           <input
             type="text"
             value={form.firstName}
+            // Controlled inputs keep the React state and outgoing payload in sync.
             onChange={(event) => setForm((current) => ({ ...current, firstName: event.target.value }))}
             required
           />
@@ -49,6 +61,7 @@ export function RegisterPage() {
           <input
             type="text"
             value={form.lastName}
+            // Controlled inputs keep the React state and outgoing payload in sync.
             onChange={(event) => setForm((current) => ({ ...current, lastName: event.target.value }))}
             required
           />
@@ -58,6 +71,7 @@ export function RegisterPage() {
           <input
             type="email"
             value={form.email}
+            // Controlled inputs keep the React state and outgoing payload in sync.
             onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
             required
           />
@@ -67,6 +81,7 @@ export function RegisterPage() {
           <input
             type="password"
             value={form.password}
+            // Controlled inputs keep the React state and outgoing payload in sync.
             onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
             required
           />

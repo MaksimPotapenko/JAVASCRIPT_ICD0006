@@ -5,15 +5,23 @@ import { useAuth } from "@/context/AuthContext";
 import { useTodos } from "@/context/TodoContext";
 import type { TodoCategory, TodoPriority, TodoTask } from "@/types/api";
 
+/**
+ * Manages Todo categories, including creation, inline editing, and removal.
+ */
 function CategorySection() {
   const { state, addCategory, saveCategory, removeCategory } = useTodos();
+  // Keeps the editable category creation fields local to the category panel.
   const [draft, setDraft] = useState({
     categoryName: "",
     categorySort: "1",
     tag: "",
   });
 
+  /**
+   * Creates a category from the draft form and resets the local editor afterwards.
+   */
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
+    // Prevent the browser from reloading when the form is submitted.
     event.preventDefault();
     await addCategory({
       categoryName: draft.categoryName,
@@ -27,7 +35,11 @@ function CategorySection() {
     });
   }
 
+  /**
+   * Persists a single inline category field change through the shared Todo context.
+   */
   async function handleUpdate(category: TodoCategory, field: keyof TodoCategory, value: string) {
+    // Build the next version of the entity locally before sending it through the shared context.
     const nextCategory: TodoCategory = {
       ...category,
       [field]: field === "categorySort" ? Number(value) : value,
@@ -43,6 +55,7 @@ function CategorySection() {
         <p>Group tasks into stable buckets you can reuse across sessions.</p>
       </div>
 
+      // The create form is local to this panel, while persistence goes through the shared context.
       <form className="stack-form" onSubmit={handleCreate}>
         <input
           placeholder="Category name"
@@ -99,14 +112,22 @@ function CategorySection() {
   );
 }
 
+/**
+ * Manages reusable Todo priorities with the same inline editing pattern as categories.
+ */
 function PrioritySection() {
   const { state, addPriority, savePriority, removePriority } = useTodos();
+  // Keeps the create-priority draft isolated to the priority panel.
   const [draft, setDraft] = useState({
     priorityName: "",
     prioritySort: "1",
   });
 
+  /**
+   * Creates a priority from the local draft form.
+   */
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
+    // Prevent the browser from reloading when the form is submitted.
     event.preventDefault();
     await addPriority({
       priorityName: draft.priorityName,
@@ -118,7 +139,11 @@ function PrioritySection() {
     });
   }
 
+  /**
+   * Persists a single inline priority field change through the shared Todo context.
+   */
   async function handleUpdate(priority: TodoPriority, field: keyof TodoPriority, value: string) {
+    // Build the next version of the entity locally before sending it through the shared context.
     const nextPriority: TodoPriority = {
       ...priority,
       [field]: field === "prioritySort" ? Number(value) : value,
@@ -134,6 +159,7 @@ function PrioritySection() {
         <p>Maintain reusable urgency levels for all Todo tasks.</p>
       </div>
 
+      // The create form is local to this panel, while persistence goes through the shared context.
       <form className="stack-form" onSubmit={handleCreate}>
         <input
           placeholder="Priority name"
@@ -181,8 +207,12 @@ function PrioritySection() {
   );
 }
 
+/**
+ * Builds new tasks once categories and priorities are available.
+ */
 function TaskComposer() {
   const { state, addTask } = useTodos();
+  // Stores the editable task draft before it is submitted to the backend.
   const [draft, setDraft] = useState({
     taskName: "",
     taskSort: "1",
@@ -194,6 +224,7 @@ function TaskComposer() {
   });
 
   useEffect(() => {
+    // Preselect the first available category and priority so task creation needs fewer manual steps.
     if (!draft.todoCategoryId && state.categories[0]) {
       setDraft((current) => ({ ...current, todoCategoryId: state.categories[0].id }));
     }
@@ -202,7 +233,11 @@ function TaskComposer() {
     }
   }, [draft.todoCategoryId, draft.todoPriorityId, state.categories, state.priorities]);
 
+  /**
+   * Creates a task from the current draft and resets the task-specific fields afterwards.
+   */
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
+    // Prevent the browser from reloading when the form is submitted.
     event.preventDefault();
     await addTask({
       taskName: draft.taskName,
@@ -232,6 +267,7 @@ function TaskComposer() {
         <p>Create tasks once categories and priorities are available.</p>
       </div>
 
+      // Task creation is blocked until the related lookup entities exist.
       <form className="task-form" onSubmit={handleCreate}>
         <input
           placeholder="Task name"
@@ -304,10 +340,17 @@ function TaskComposer() {
   );
 }
 
+/**
+ * Renders either the active or archived task collection with inline edit controls.
+ */
 function TaskList({ title, tasks }: { title: string; tasks: TodoTask[] }) {
   const { state, saveTask, removeTask } = useTodos();
 
+  /**
+   * Persists a single inline task field edit back through the shared Todo context.
+   */
   async function handleFieldChange(task: TodoTask, field: keyof TodoTask, value: string | boolean) {
+    // Build the next version of the task locally before sending it through the shared context.
     const nextTask: TodoTask = {
       ...task,
       [field]:
@@ -328,6 +371,7 @@ function TaskList({ title, tasks }: { title: string; tasks: TodoTask[] }) {
         <p>Edit Todo entries inline. Changes are pushed directly back to the backend.</p>
       </div>
 
+      // Every control here edits the live backend entity through the shared Todo context.
       <div className="entity-list">
         {tasks.map((task) => (
           <article key={task.id} className="entity-card task-card">
@@ -399,15 +443,23 @@ function TaskList({ title, tasks }: { title: string; tasks: TodoTask[] }) {
   );
 }
 
+/**
+ * Composes the protected Todo workspace and orchestrates the initial Todo data load.
+ */
 export function DashboardPage() {
   const { state: authState, fullName, logoutUser } = useAuth();
   const { state: todoState, loadAll, activeTasks, archivedTasks, clearAll } = useTodos();
 
   useEffect(() => {
+    // Load the full Todo dataset once the protected dashboard mounts.
     void loadAll();
   }, []);
 
+  /**
+   * Clears Todo state first so no private data lingers locally after the session is removed.
+   */
   function handleLogout() {
+    // Clear domain data first, then remove the auth session so protected content disappears cleanly.
     clearAll();
     logoutUser();
   }

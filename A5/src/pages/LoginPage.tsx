@@ -4,20 +4,30 @@ import { useNavigate } from "react-router-dom";
 import { AuthShell } from "@/components/AuthShell";
 import { useAuth } from "@/context/AuthContext";
 
+/**
+ * Renders the login form and forwards successful authentication into the protected app area.
+ */
 export function LoginPage() {
   const navigate = useNavigate();
   const { state, loginUser, clearError } = useAuth();
+  // Stores the current editable login fields before they are submitted to the auth context.
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
 
+  /**
+   * Submits the login form through the auth context so navigation and error handling stay centralized.
+   */
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    // Prevent the browser from trying to submit and reload the page.
     event.preventDefault();
+    // Clear any previous visible auth error before attempting a new request.
     clearError();
 
     try {
       await loginUser(form);
+      // Enter the private dashboard immediately after a successful login.
       navigate("/app");
     } catch {
       // The auth context already stores the user-facing error message.
@@ -32,12 +42,14 @@ export function LoginPage() {
       footerHref="/register"
       footerAction="Create one"
     >
+      // The form itself stays intentionally small because the auth context owns the real workflow.
       <form className="auth-form" onSubmit={handleSubmit}>
         <label>
           <span>Email</span>
           <input
             type="email"
             value={form.email}
+            // Keep the input controlled so the submitted payload always matches the UI.
             onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
             required
           />
@@ -47,6 +59,7 @@ export function LoginPage() {
           <input
             type="password"
             value={form.password}
+            // Keep the input controlled so the submitted payload always matches the UI.
             onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
             required
           />

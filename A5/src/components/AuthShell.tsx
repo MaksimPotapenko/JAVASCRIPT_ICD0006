@@ -9,6 +9,9 @@ interface AuthShellProps {
   children: React.ReactNode;
 }
 
+/**
+ * Provides a shared two-column layout for login and registration screens.
+ */
 export function AuthShell({
   title,
   intro,
@@ -19,6 +22,7 @@ export function AuthShell({
 }: AuthShellProps) {
   return (
     <main className="auth-layout">
+      // The left side explains the assignment goals and core architecture choices.
       <section className="auth-hero">
         <p className="eyebrow">Assignment 5</p>
         <h1>React Todo workspace with JWT and refresh-token security.</h1>
@@ -30,6 +34,7 @@ export function AuthShell({
         </ul>
       </section>
 
+      // The right side hosts the actual login or registration form content.
       <section className="auth-card">
         <div className="auth-card-header">
           <h2>{title}</h2>
