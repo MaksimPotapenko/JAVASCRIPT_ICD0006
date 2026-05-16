@@ -15,7 +15,9 @@ const props = defineProps<{
 const authStore = useAuthStore();
 const nutikasStore = useNutikasStore();
 
+// team holds the fully expanded public result detail for one team route.
 const team = computed(() => nutikasStore.teamResults[props.teamId]);
+// Use organiser checkpoints when possible so the route can be compared against configured control points.
 const checkPoints = computed(() =>
   authStore.isOrganiser
     ? (nutikasStore.organiserCheckPoints[props.contestId] ?? []).map((item) => ({ ...item, source: "organiser" as const }))
@@ -23,10 +25,12 @@ const checkPoints = computed(() =>
 );
 
 onMounted(async () => {
+  // Team detail is shareable directly by URL, so it loads everything it needs on entry.
   await nutikasStore.loadTeamResult(props.contestId, props.teamId);
   await nutikasStore.loadPublicCheckpointHints(props.contestId);
 
   if (authStore.isOrganiser) {
+    // Organisers see the richer checkpoint source on the same detail page.
     await nutikasStore.loadOrganiserContestBundle(props.contestId);
   }
 });

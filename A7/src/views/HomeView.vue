@@ -10,6 +10,7 @@ const authStore = useAuthStore();
 const nutikasStore = useNutikasStore();
 
 onMounted(() => {
+  // The homepage only needs the public contest catalogue, so load it immediately on entry.
   void nutikasStore.loadContests();
 });
 </script>

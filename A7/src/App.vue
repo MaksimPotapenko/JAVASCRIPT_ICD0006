@@ -9,8 +9,10 @@ const authStore = useAuthStore();
 const router = useRouter();
 const apiBaseUrl = getApiBaseUrl();
 
+// Show a friendly shell label whether the user is anonymous or authenticated.
 const accountLabel = computed(() => authStore.email ?? "Guest");
 
+/** Logs the user out through the store, then brings the shell back to the public home page. */
 async function signOut(): Promise<void> {
   await authStore.logout();
   await router.push({ name: "home" });

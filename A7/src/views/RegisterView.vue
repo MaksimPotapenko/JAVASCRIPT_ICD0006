@@ -8,6 +8,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 const error = ref<string | null>(null);
 
+// Keep all registration inputs together so the form can be spread into the auth payload.
 const form = reactive({
   firstname: "",
   lastname: "",
@@ -16,8 +17,10 @@ const form = reactive({
   confirmPassword: "",
 });
 
+// Block submission early when the confirmation field no longer matches the password field.
 const passwordMismatch = computed(() => form.confirmPassword.length > 0 && form.password !== form.confirmPassword);
 
+/** Registers a user via Nutikas identity and returns to the public home screen on success. */
 async function submit(): Promise<void> {
   error.value = null;
 
@@ -27,6 +30,7 @@ async function submit(): Promise<void> {
   }
 
   try {
+    // The store persists the returned tokens automatically, so registration also signs the user in.
     await authStore.register({
       firstname: form.firstname,
       lastname: form.lastname,

@@ -10,6 +10,7 @@ const props = defineProps<{
 const dataUrl = ref("");
 
 watchEffect(async () => {
+  // Re-generate the QR image whenever the checkpoint value changes in organiser forms.
   dataUrl.value = await QRCode.toDataURL(props.value, {
     margin: 1,
     width: 160,

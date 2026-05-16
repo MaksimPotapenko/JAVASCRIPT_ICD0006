@@ -15,8 +15,10 @@ const authStore = useAuthStore();
 const nutikasStore = useNutikasStore();
 const selectedTeamId = ref("");
 
+// The results screen combines the public leaderboard with one selected team's detailed route.
 const results = computed(() => nutikasStore.contestResults[props.contestId]);
 const selectedTeam = computed(() => (selectedTeamId.value ? nutikasStore.teamResults[selectedTeamId.value] : null));
+// Reuse organiser checkpoints when available, otherwise fall back to the public inferred set.
 const mapCheckPoints = computed(() =>
   authStore.isOrganiser
     ? (nutikasStore.organiserCheckPoints[props.contestId] ?? []).map((item) => ({ ...item, source: "organiser" as const }))
@@ -24,21 +26,25 @@ const mapCheckPoints = computed(() =>
 );
 
 onMounted(async () => {
+  // Load leaderboard data first so the page has at least one team to inspect.
   await nutikasStore.loadContestResults(props.contestId);
   await nutikasStore.loadPublicCheckpointHints(props.contestId);
 
+  // Auto-select the first published team so the map/detail panel is populated immediately.
   const firstTeam = nutikasStore.contestResults[props.contestId]?.teams?.[0];
   if (firstTeam) {
     selectedTeamId.value = firstTeam.id;
   }
 
   if (authStore.isOrganiser) {
+    // Organisers can enrich the same page with the actual configured checkpoint set.
     await nutikasStore.loadOrganiserContestBundle(props.contestId);
   }
 });
 
 watch(selectedTeamId, async (teamId) => {
   if (teamId) {
+    // Fetch the chosen team's detailed marking timeline each time the selection changes.
     await nutikasStore.loadTeamResult(props.contestId, teamId);
   }
 }, { immediate: true });

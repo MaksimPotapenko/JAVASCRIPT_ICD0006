@@ -9,6 +9,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: string];
 }>();
 
+// These refs drive the small scanner UI state machine.
 const scanMessage = ref("Upload a QR screenshot, scan with the camera, or type the token manually.");
 const scanBusy = ref(false);
 const cameraBusy = ref(false);
@@ -18,6 +19,7 @@ const videoRef = ref<HTMLVideoElement | null>(null);
 let stream: MediaStream | null = null;
 let scanIntervalId: number | null = null;
 
+/** Scans a user-selected screenshot for QR content and writes the detected text into v-model. */
 async function handleFile(event: Event): Promise<void> {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
@@ -27,6 +29,7 @@ async function handleFile(event: Event): Promise<void> {
   }
 
   if (!window.BarcodeDetector) {
+    // The manual input still keeps the assignment usable on unsupported browsers.
     scanMessage.value = "BarcodeDetector is not available in this browser. Please paste the QR text manually.";
     return;
   }
@@ -39,6 +42,7 @@ async function handleFile(event: Event): Promise<void> {
     const [result] = await detector.detect(bitmap);
 
     if (result?.rawValue) {
+      // The QR CPID/text flows straight into the parent form through the v-model contract.
       emit("update:modelValue", result.rawValue);
       scanMessage.value = "QR content detected and copied into the field.";
     } else {
@@ -52,6 +56,7 @@ async function handleFile(event: Event): Promise<void> {
   }
 }
 
+/** Starts a live camera feed and polls it for QR codes until one is found or the user stops it. */
 async function startCameraScan(): Promise<void> {
   if (!window.BarcodeDetector || !navigator.mediaDevices?.getUserMedia) {
     scanMessage.value = "Live camera scanning is not supported in this browser.";
@@ -70,6 +75,7 @@ async function startCameraScan(): Promise<void> {
       throw new Error("Video element is not ready");
     }
 
+    // Attach the media stream to the preview so the user can aim the device camera.
     videoRef.value.srcObject = stream;
     await videoRef.value.play();
     cameraActive.value = true;
@@ -78,10 +84,12 @@ async function startCameraScan(): Promise<void> {
     const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
     scanIntervalId = window.setInterval(async () => {
       if (!videoRef.value || !cameraActive.value) {
+        // Skip work if the component lost its video element or the user already stopped scanning.
         return;
       }
 
       try {
+        // Polling avoids introducing a bigger dependency just for browser-side QR decoding.
         const [result] = await detector.detect(videoRef.value);
         if (result?.rawValue) {
           emit("update:modelValue", result.rawValue);
@@ -100,6 +108,7 @@ async function startCameraScan(): Promise<void> {
   }
 }
 
+/** Stops camera scanning, clears timers, and releases all media tracks. */
 function stopCameraScan(): void {
   if (scanIntervalId !== null) {
     window.clearInterval(scanIntervalId);
@@ -107,11 +116,13 @@ function stopCameraScan(): void {
   }
 
   if (videoRef.value) {
+    // Detach the stream from the preview element before stopping media tracks.
     videoRef.value.pause();
     videoRef.value.srcObject = null;
   }
 
   for (const track of stream?.getTracks() ?? []) {
+    // Releasing tracks removes the browser camera indicator and frees device access.
     track.stop();
   }
 
@@ -120,6 +131,7 @@ function stopCameraScan(): void {
 }
 
 onBeforeUnmount(() => {
+  // Clean up webcam access if the user navigates away while the scanner is still running.
   stopCameraScan();
 });
 </script>

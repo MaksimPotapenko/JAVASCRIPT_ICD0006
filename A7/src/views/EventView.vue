@@ -14,15 +14,18 @@ const props = defineProps<{
 
 const authStore = useAuthStore();
 const nutikasStore = useNutikasStore();
+// selectedUserTeamId drives both the activation lookup and the target for new participant markings.
 const selectedUserTeamId = ref("");
 const actionMessage = ref<string | null>(null);
 
+// Team registration payload for POST /Contests/{id}/teams.
 const registrationForm = reactive({
   teamName: "",
   teamMembers: "",
   contestClassId: "",
 });
 
+// Participant marking payload for POST /Markings.
 const markingForm = reactive({
   checkPointId: "",
   lat: "",
@@ -30,11 +33,14 @@ const markingForm = reactive({
   dt: "",
 });
 
+// contest and contestUserTeams are derived caches exposed by the Pinia store.
 const contest = computed(() => nutikasStore.contestDetails[props.contestId]);
 const contestUserTeams = computed(() => nutikasStore.userTeams[props.contestId] ?? []);
+// selectedActivation is the latest live state for the currently inspected team.
 const selectedActivation = computed(() =>
   selectedUserTeamId.value ? nutikasStore.activations[selectedUserTeamId.value] : null,
 );
+// Organisers can see configured checkpoints directly, while regular users get inferred public hints.
 const mapCheckPoints = computed(() =>
   authStore.isOrganiser
     ? (nutikasStore.organiserCheckPoints[props.contestId] ?? []).map((item) => ({ ...item, source: "organiser" as const }))
@@ -42,32 +48,39 @@ const mapCheckPoints = computed(() =>
 );
 
 onMounted(async () => {
+  // Load the public event data first so the page can render even before auth-only calls complete.
   await nutikasStore.loadContest(props.contestId);
   await nutikasStore.loadContestResults(props.contestId);
   await nutikasStore.loadPublicCheckpointHints(props.contestId);
 
   if (authStore.isAuthenticated) {
+    // Authenticated users also see their own registered teams for this event.
     await nutikasStore.loadUserTeamsForContest(props.contestId);
   }
 });
 
+/** Registers a team for the current contest and focuses that team for follow-up marking. */
 async function registerTeam(): Promise<void> {
   actionMessage.value = null;
   const created = await nutikasStore.registerContestTeam(props.contestId, { ...registrationForm });
   selectedUserTeamId.value = created.id;
   actionMessage.value = `Team ${created.teamName ?? "created"} is registered.`;
+  // Clear the form after success so the UI is ready for another registration if needed.
   registrationForm.teamName = "";
   registrationForm.teamMembers = "";
 }
 
+/** Loads the live activation state for the selected user team. */
 async function openUserTeam(userTeamId: string): Promise<void> {
   selectedUserTeamId.value = userTeamId;
   await nutikasStore.loadUserTeamActivationState(userTeamId);
 }
 
+/** Submits one participant QR marking and updates the visible activation summary. */
 async function submitMarking(): Promise<void> {
   actionMessage.value = null;
 
+  // If the user did not pick a team manually, fall back to the first registered one.
   const userTeamId = selectedUserTeamId.value || contestUserTeams.value[0]?.id;
   if (!userTeamId) {
     actionMessage.value = "Register or select a team before marking checkpoints.";
@@ -75,6 +88,7 @@ async function submitMarking(): Promise<void> {
   }
 
   const activation = await nutikasStore.submitParticipantMarking({
+    // checkPointId may contain either plain CPID text or raw content decoded from the QR scanner.
     checkPointId: markingForm.checkPointId,
     userTeamId,
     lat: markingForm.lat || null,
@@ -83,11 +97,14 @@ async function submitMarking(): Promise<void> {
   });
 
   selectedUserTeamId.value = userTeamId;
+  // Keep the success text human-readable whether the backend returned a full activation state or not.
   actionMessage.value = activation ? `Marking accepted for ${activation.teamName ?? "team"}.` : "Marking submitted.";
 }
 
+/** Copies the browser geolocation coordinates into the marking form for easier field submission. */
 function useMyLocation(): void {
   navigator.geolocation.getCurrentPosition((position) => {
+    // Fixed precision keeps the coordinate fields compact but still map-usable.
     markingForm.lat = position.coords.latitude.toFixed(6);
     markingForm.lon = position.coords.longitude.toFixed(6);
   });

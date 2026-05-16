@@ -20,6 +20,7 @@ interface MapPoint {
   type: number;
 }
 
+// Filters let the user focus on starts/finishes/bonus checkpoints or only the travelled track.
 const filters = reactive({
   showCheckpoints: true,
   showMarkings: true,
@@ -30,6 +31,7 @@ const filters = reactive({
   query: "",
 });
 
+/** Normalizes geographic coordinates into SVG coordinates for the local lightweight map view. */
 const normalized = computed(() => {
   const sourcePoints = [
     ...(props.checkpoints ?? []).map((item) => ({
@@ -54,6 +56,7 @@ const normalized = computed(() => {
     return [];
   }
 
+  // Find the coordinate bounds first so all points can be scaled into the same SVG viewport.
   const latitudes = sourcePoints.map((item) => item.lat);
   const longitudes = sourcePoints.map((item) => item.lon);
   const minLat = Math.min(...latitudes);
@@ -65,6 +68,7 @@ const normalized = computed(() => {
 
   return sourcePoints.map<MapPoint>((item) => ({
     id: item.id,
+    // Add margins so labels are not clipped at the edges of the SVG.
     x: 24 + ((item.lon - minLon) / lonSpan) * 552,
     y: 24 + (1 - (item.lat - minLat) / latSpan) * 272,
     label: item.label,
@@ -73,26 +77,31 @@ const normalized = computed(() => {
   }));
 });
 
+/** Applies the current filter toggles and free-text search to the normalized map points. */
 const filteredPoints = computed(() => {
   const query = filters.query.trim().toLowerCase();
 
   return normalized.value.filter((point) => {
+    // First decide whether this point kind is visible at all.
     const matchesKind =
       (point.kind === "checkpoint" && filters.showCheckpoints) ||
       (point.kind === "marking" && filters.showMarkings);
 
+    // Then decide whether this checkpoint type passes the type-specific checkboxes.
     const matchesType =
       (point.type === 1 && filters.includeRegular) ||
       (point.type === 2 && filters.includeStart) ||
       (point.type === 3 && filters.includeFinish) ||
       (point.type === 4 && filters.includeBonus);
 
+    // Free-text search filters by the already formatted label visible in the SVG.
     const matchesQuery = !query || point.label.toLowerCase().includes(query);
 
     return matchesKind && matchesType && matchesQuery;
   });
 });
 
+// The polyline track should connect only actual marking points, not organiser-defined checkpoints.
 const track = computed(() => filteredPoints.value.filter((item) => item.kind === "marking"));
 </script>
 

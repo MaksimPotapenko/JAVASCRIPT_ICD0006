@@ -9,6 +9,7 @@ import ResultsView from "@/views/ResultsView.vue";
 import TeamDetailView from "@/views/TeamDetailView.vue";
 import EventView from "@/views/EventView.vue";
 
+// The router owns the top-level page split between public, user, and organiser flows.
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -26,24 +27,29 @@ router.beforeEach((to) => {
   const session = readStoredSession();
 
   if (to.meta.guestOnly && session?.jwt) {
+    // Logged-in users should not revisit login/register unless they sign out first.
     return { name: "home" };
   }
 
   if (to.meta.requiresOrganiser) {
     if (!session?.jwt) {
+      // Preserve the attempted route so login can send the user back into the organiser area.
       return { name: "login", query: { next: to.fullPath } };
     }
 
+    // Read organiser role claims directly from the JWT for simple client-side access control.
     const payload = JSON.parse(atob(session.jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))) as Record<string, unknown>;
     const roles = [payload.role, payload.roles, payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]]
       .flatMap((entry) => (Array.isArray(entry) ? entry : [entry]))
       .filter((entry): entry is string => typeof entry === "string");
 
     if (!roles.includes("organiser")) {
+      // Non-organisers can still use the public and user flows, but not the organiser workspace.
       return { name: "home" };
     }
   }
 
+  // Returning true allows the navigation to continue unchanged.
   return true;
 });
 

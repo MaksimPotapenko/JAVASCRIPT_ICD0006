@@ -9,16 +9,19 @@ const route = useRoute();
 const router = useRouter();
 const error = ref<string | null>(null);
 
+// Keep the login form local to this screen until submit is triggered.
 const form = reactive({
   email: "",
   password: "",
 });
 
+/** Authenticates the user, then redirects either to the originally requested route or home. */
 async function submit(): Promise<void> {
   error.value = null;
 
   try {
     await authStore.login({ ...form });
+    // Router guards may attach ?next=/organiser so organisers land where they intended to go.
     const next = typeof route.query.next === "string" ? route.query.next : "/";
     await router.push(next);
   } catch (reason) {

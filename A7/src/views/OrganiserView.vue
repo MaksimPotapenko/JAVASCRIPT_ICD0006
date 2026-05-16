@@ -8,6 +8,7 @@ import { checkpointTypeLabel, formatCoordinate, formatDate, formatDateInput, mar
 
 const nutikasStore = useNutikasStore();
 
+// Selection refs decide which contest/team/marking the organiser workspace is currently editing.
 const selectedContestId = ref("");
 const selectedTeamId = ref("");
 const editingContestId = ref<string | null>(null);
@@ -17,6 +18,7 @@ const editingTeamId = ref<string | null>(null);
 const editingMarkingId = ref<string | null>(null);
 const memberEmail = ref("");
 
+// Contest form mirrors organiser contest create/update payload fields.
 const contestForm = reactive({
   name: "",
   visibleFrom: "",
@@ -28,6 +30,7 @@ const contestForm = reactive({
   organisationId: "",
 });
 
+// Contest class form configures class ordering, duration, and penalties.
 const classForm = reactive({
   name: "",
   orderNr: 1,
@@ -37,6 +40,7 @@ const classForm = reactive({
   overDurationPenalty: 0,
 });
 
+// Checkpoint form covers CPID/code, type, score, and optional map coordinates.
 const pointForm = reactive({
   cpid: "",
   cpCode: "",
@@ -46,6 +50,7 @@ const pointForm = reactive({
   lon: "",
 });
 
+// Team form is used for organiser-created teams and manual score edits.
 const teamForm = reactive({
   name: "",
   memberNames: "",
@@ -58,6 +63,7 @@ const teamForm = reactive({
   finalScore: 0,
 });
 
+// createMarkingForm is used when the organiser submits a marking on behalf of a team.
 const createMarkingForm = reactive({
   checkPointId: "",
   dt: "",
@@ -65,6 +71,7 @@ const createMarkingForm = reactive({
   lon: "",
 });
 
+// updateMarkingForm is populated from one fetched marking detail row for editing.
 const updateMarkingForm = reactive({
   dt: "",
   lat: "",
@@ -75,6 +82,7 @@ const updateMarkingForm = reactive({
   userTeamId: "",
 });
 
+// These computed wrappers keep the template readable while still sourcing data from the central store.
 const organisations = computed(() => nutikasStore.organiserOrganisations);
 const contests = computed(() => nutikasStore.organiserContests);
 const contestClasses = computed(() => nutikasStore.organiserClasses[selectedContestId.value] ?? []);
@@ -85,10 +93,12 @@ const markings = computed(() => nutikasStore.organiserMarkings[selectedContestId
 const markingDetails = computed(() => (editingMarkingId.value ? nutikasStore.organiserMarkingDetails[editingMarkingId.value] : null));
 
 onMounted(async () => {
+  // Boot the organiser workspace with organisations and contest list first.
   await nutikasStore.loadOrganiserHome();
 
   const firstContest = nutikasStore.organiserContests[0];
   if (firstContest) {
+    // Preselect the first contest so the rest of the dashboard can populate automatically.
     selectedContestId.value = firstContest.id;
   }
 });
@@ -98,12 +108,15 @@ watch(selectedContestId, async (contestId) => {
     return;
   }
 
+  // Changing the selected contest reloads all admin subresources tied to that contest.
   await nutikasStore.loadOrganiserContestBundle(contestId);
+  // Reset team selection because the previous team belonged to a different contest context.
   selectedTeamId.value = "";
 });
 
 watch(selectedTeamId, async (teamId) => {
   if (teamId) {
+    // Team selection drives the member-management panel.
     await nutikasStore.loadOrganiserTeamMembers(teamId);
   }
 });
@@ -113,9 +126,11 @@ watch(editingMarkingId, async (markingId) => {
     return;
   }
 
+  // Editing a marking fetches the latest server copy, then maps it into the local form fields.
   await nutikasStore.loadMarking(markingId);
   const detail = nutikasStore.organiserMarkingDetails[markingId];
   if (detail) {
+    // Copy the fetched backend values into the editable form fields one by one.
     updateMarkingForm.dt = formatDateInput(detail.dt);
     updateMarkingForm.lat = detail.lat ?? "";
     updateMarkingForm.lon = detail.lon ?? "";
@@ -126,6 +141,7 @@ watch(editingMarkingId, async (markingId) => {
   }
 });
 
+/** Creates or updates the selected contest depending on whether edit mode is active. */
 async function submitContest(): Promise<void> {
   const payload = {
     name: contestForm.name,
@@ -144,9 +160,11 @@ async function submitContest(): Promise<void> {
     await nutikasStore.createContest(payload);
   }
 
+  // Reset back to create mode after a successful save.
   resetContestForm();
 }
 
+/** Creates or updates a contest class for the currently selected contest. */
 async function submitClass(): Promise<void> {
   if (!selectedContestId.value) {
     return;
@@ -167,9 +185,11 @@ async function submitClass(): Promise<void> {
     await nutikasStore.createContestClass(selectedContestId.value, payload);
   }
 
+  // Clearing the form makes it obvious that the save finished and avoids accidental duplicate edits.
   resetClassForm();
 }
 
+/** Creates or updates a checkpoint, including optional lat/lon used by the map views. */
 async function submitPoint(): Promise<void> {
   if (!selectedContestId.value) {
     return;
@@ -193,6 +213,7 @@ async function submitPoint(): Promise<void> {
   resetPointForm();
 }
 
+/** Creates or updates a team inside the current organiser-selected contest. */
 async function submitTeam(): Promise<void> {
   if (!selectedContestId.value) {
     return;
@@ -219,11 +240,13 @@ async function submitTeam(): Promise<void> {
   resetTeamForm();
 }
 
+/** Creates a manual organiser marking for the currently selected team. */
 async function submitCreateMarking(): Promise<void> {
   if (!selectedContestId.value || !selectedTeamId.value) {
     return;
   }
 
+  // Organiser marking creation uses checkpoint GUIDs, not participant QR text payloads.
   await nutikasStore.createTeamMarking(selectedContestId.value, selectedTeamId.value, {
     checkPointId: createMarkingForm.checkPointId,
     dt: toIso(createMarkingForm.dt),
@@ -237,6 +260,7 @@ async function submitCreateMarking(): Promise<void> {
   createMarkingForm.lon = "";
 }
 
+/** Saves edits to an existing marking row. */
 async function submitUpdateMarking(): Promise<void> {
   if (!selectedContestId.value || !editingMarkingId.value) {
     return;
@@ -253,6 +277,7 @@ async function submitUpdateMarking(): Promise<void> {
   });
 }
 
+/** Adds a user to the selected team by email. */
 async function submitTeamMember(): Promise<void> {
   if (!selectedTeamId.value || !memberEmail.value) {
     return;
@@ -262,6 +287,7 @@ async function submitTeamMember(): Promise<void> {
   memberEmail.value = "";
 }
 
+/** Copies the selected contest into the contest form so the organiser can edit it. */
 function editContest(): void {
   const contest = contests.value.find((item) => item.id === selectedContestId.value);
   if (!contest) {
@@ -269,6 +295,7 @@ function editContest(): void {
   }
 
   editingContestId.value = contest.id;
+  // Pre-fill the organiser form with the currently selected contest values.
   contestForm.name = contest.name ?? "";
   contestForm.visibleFrom = formatDateInput(contest.visibleFrom);
   contestForm.openFrom = formatDateInput(contest.openFrom);
@@ -279,6 +306,7 @@ function editContest(): void {
   contestForm.organisationId = contest.organisationId;
 }
 
+/** Copies one contest class into the class form. */
 function editClass(classId: string): void {
   const item = contestClasses.value.find((entry) => entry.id === classId);
   if (!item) {
@@ -286,6 +314,7 @@ function editClass(classId: string): void {
   }
 
   editingClassId.value = classId;
+  // Copy values from the chosen class row into the shared editing form.
   classForm.name = item.name ?? "";
   classForm.orderNr = item.orderNr;
   classForm.duration = item.duration;
@@ -294,6 +323,7 @@ function editClass(classId: string): void {
   classForm.overDurationPenalty = item.overDurationPenalty;
 }
 
+/** Copies one checkpoint into the checkpoint form for editing. */
 function editPoint(pointId: string): void {
   const item = checkPoints.value.find((entry) => entry.id === pointId);
   if (!item) {
@@ -301,6 +331,7 @@ function editPoint(pointId: string): void {
   }
 
   editingPointId.value = pointId;
+  // This makes the checkpoint form double as both "create" and "edit" UI.
   pointForm.cpid = item.cpid ?? "";
   pointForm.cpCode = item.cpCode ?? "";
   pointForm.checkPointType = item.checkPointType;
@@ -309,6 +340,7 @@ function editPoint(pointId: string): void {
   pointForm.lon = item.lon ?? "";
 }
 
+/** Copies one team into the organiser team form and selects it for related member management. */
 function editTeam(teamId: string): void {
   const item = teams.value.find((entry) => entry.id === teamId);
   if (!item) {
@@ -316,6 +348,7 @@ function editTeam(teamId: string): void {
   }
 
   editingTeamId.value = teamId;
+  // Selecting the edited team also opens the member-management context for that same team.
   teamForm.name = item.name ?? "";
   teamForm.memberNames = item.memberNames ?? "";
   teamForm.contestClassId = item.contestClassId;
@@ -328,6 +361,7 @@ function editTeam(teamId: string): void {
   selectedTeamId.value = teamId;
 }
 
+/** Resets the contest form back to create mode defaults. */
 function resetContestForm(): void {
   editingContestId.value = null;
   contestForm.name = "";
@@ -337,9 +371,11 @@ function resetContestForm(): void {
   contestForm.bonusTimeStart = "";
   contestForm.bonusTimeEnd = "";
   contestForm.bonusPerMarking = 0;
+  // Default to the first organisation when available so new contest creation needs fewer clicks.
   contestForm.organisationId = organisations.value[0]?.id ?? "";
 }
 
+/** Resets the class form back to its default state. */
 function resetClassForm(): void {
   editingClassId.value = null;
   classForm.name = "";
@@ -350,6 +386,7 @@ function resetClassForm(): void {
   classForm.overDurationPenalty = 0;
 }
 
+/** Resets the checkpoint form back to a blank checkpoint template. */
 function resetPointForm(): void {
   editingPointId.value = null;
   pointForm.cpid = "";
@@ -360,6 +397,7 @@ function resetPointForm(): void {
   pointForm.lon = "";
 }
 
+/** Resets the team form back to its default values. */
 function resetTeamForm(): void {
   editingTeamId.value = null;
   teamForm.name = "";
@@ -373,14 +411,19 @@ function resetTeamForm(): void {
   teamForm.finalScore = 0;
 }
 
+/** Opens the browser print dialog for the checkpoint QR section. */
 function printPage(): void {
+  // Used for checkpoint QR print sheets from the organiser workspace.
   window.print();
 }
 
+/** Converts a datetime-local value into the ISO string expected by the backend. */
 function toIso(value: string): string {
+  // Browser datetime-local inputs produce local time text, so convert it into backend-friendly ISO.
   return new Date(value).toISOString();
 }
 
+/** Converts an optional datetime-local field into either ISO text or null. */
 function toNullableIso(value: string): string | null {
   return value ? toIso(value) : null;
 }
