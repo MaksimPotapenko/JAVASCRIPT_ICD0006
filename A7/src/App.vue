@@ -10,7 +10,13 @@ const router = useRouter();
 const apiBaseUrl = getApiBaseUrl();
 
 // Show a friendly shell label whether the user is anonymous or authenticated.
-const accountLabel = computed(() => authStore.email ?? "Guest");
+const accountLabel = computed(() => {
+  if (authStore.email) {
+    return authStore.email;
+  }
+
+  return authStore.isAuthenticated ? "Authenticated user" : "Guest";
+});
 
 /** Logs the user out through the store, then brings the shell back to the public home page. */
 async function signOut(): Promise<void> {

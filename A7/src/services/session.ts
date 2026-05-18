@@ -90,7 +90,15 @@ export function extractRoles(token: string): string[] {
  */
 export function extractEmail(token: string): string | null {
   const payload = decodeJwtPayload(token);
-  const keys = ["email", "unique_name", "sub"];
+  const keys = [
+    "email",
+    "unique_name",
+    "name",
+    "preferred_username",
+    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+    "sub",
+  ];
 
   for (const key of keys) {
     const value = payload[key];

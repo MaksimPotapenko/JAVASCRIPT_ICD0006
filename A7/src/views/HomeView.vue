@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { computed, onMounted } from "vue";
 import { RouterLink } from "vue-router";
 
 import { useAuthStore } from "@/stores/auth";
@@ -8,6 +8,7 @@ import { formatDate } from "@/utils/format";
 
 const authStore = useAuthStore();
 const nutikasStore = useNutikasStore();
+const accountLabel = computed(() => authStore.email ?? "Authenticated user");
 
 onMounted(() => {
   // The homepage only needs the public contest catalogue, so load it immediately on entry.
@@ -71,7 +72,7 @@ onMounted(() => {
       <div class="status-card">
         <strong>{{ authStore.isAuthenticated ? "Authenticated" : "Guest mode" }}</strong>
         <p class="muted">
-          {{ authStore.isAuthenticated ? `Signed in as ${authStore.email}` : "You can browse events now and sign in when you are ready to register a team." }}
+          {{ authStore.isAuthenticated ? `Signed in as ${accountLabel}` : "You can browse events now and sign in when you are ready to register a team." }}
         </p>
       </div>
 
