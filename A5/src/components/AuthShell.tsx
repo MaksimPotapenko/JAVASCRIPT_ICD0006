@@ -22,7 +22,6 @@ export function AuthShell({
 }: AuthShellProps) {
   return (
     <main className="auth-layout">
-      // The left side explains the assignment goals and core architecture choices.
       <section className="auth-hero">
         <p className="eyebrow">Assignment 5</p>
         <h1>React Todo workspace with JWT and refresh-token security.</h1>
@@ -32,13 +31,11 @@ export function AuthShell({
           <li>Protected routing keeps private screens behind a valid session.</li>
           <li>CRUD flows cover categories, priorities, and tasks in one dashboard.</li>
         </ul>
-        // Match A4 by exposing a direct escape hatch back to the shared landing page.
         <a className="button-link button-link-ghost" href="https://mpotap.proxy.itcollege.ee/">
           Back to main page
         </a>
       </section>
 
-      // The right side hosts the actual login or registration form content.
       <section className="auth-card">
         <div className="auth-card-header">
           <h2>{title}</h2>

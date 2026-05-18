@@ -42,14 +42,12 @@ export function LoginPage() {
       footerHref="/register"
       footerAction="Create one"
     >
-      // The form itself stays intentionally small because the auth context owns the real workflow.
       <form className="auth-form" onSubmit={handleSubmit}>
         <label>
           <span>Email</span>
           <input
             type="email"
             value={form.email}
-            // Keep the input controlled so the submitted payload always matches the UI.
             onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
             required
           />
@@ -59,7 +57,6 @@ export function LoginPage() {
           <input
             type="password"
             value={form.password}
-            // Keep the input controlled so the submitted payload always matches the UI.
             onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
             required
           />

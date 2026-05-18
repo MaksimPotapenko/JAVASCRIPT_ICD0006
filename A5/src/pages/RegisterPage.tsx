@@ -44,14 +44,12 @@ export function RegisterPage() {
       footerHref="/login"
       footerAction="Sign in"
     >
-      // The form itself stays intentionally small because the auth context owns the real workflow.
       <form className="auth-form" onSubmit={handleSubmit}>
         <label>
           <span>First name</span>
           <input
             type="text"
             value={form.firstName}
-            // Controlled inputs keep the React state and outgoing payload in sync.
             onChange={(event) => setForm((current) => ({ ...current, firstName: event.target.value }))}
             required
           />
@@ -61,7 +59,6 @@ export function RegisterPage() {
           <input
             type="text"
             value={form.lastName}
-            // Controlled inputs keep the React state and outgoing payload in sync.
             onChange={(event) => setForm((current) => ({ ...current, lastName: event.target.value }))}
             required
           />
@@ -71,7 +68,6 @@ export function RegisterPage() {
           <input
             type="email"
             value={form.email}
-            // Controlled inputs keep the React state and outgoing payload in sync.
             onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
             required
           />
@@ -81,7 +77,6 @@ export function RegisterPage() {
           <input
             type="password"
             value={form.password}
-            // Controlled inputs keep the React state and outgoing payload in sync.
             onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
             required
           />

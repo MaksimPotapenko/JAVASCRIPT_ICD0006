@@ -55,7 +55,6 @@ function CategorySection() {
         <p>Group tasks into stable buckets you can reuse across sessions.</p>
       </div>
 
-      // The create form is local to this panel, while persistence goes through the shared context.
       <form className="stack-form" onSubmit={handleCreate}>
         <input
           placeholder="Category name"
@@ -159,7 +158,6 @@ function PrioritySection() {
         <p>Maintain reusable urgency levels for all Todo tasks.</p>
       </div>
 
-      // The create form is local to this panel, while persistence goes through the shared context.
       <form className="stack-form" onSubmit={handleCreate}>
         <input
           placeholder="Priority name"
@@ -267,7 +265,6 @@ function TaskComposer() {
         <p>Create tasks once categories and priorities are available.</p>
       </div>
 
-      // Task creation is blocked until the related lookup entities exist.
       <form className="task-form" onSubmit={handleCreate}>
         <input
           placeholder="Task name"
@@ -371,7 +368,6 @@ function TaskList({ title, tasks }: { title: string; tasks: TodoTask[] }) {
         <p>Edit Todo entries inline. Changes are pushed directly back to the backend.</p>
       </div>
 
-      // Every control here edits the live backend entity through the shared Todo context.
       <div className="entity-list">
         {tasks.map((task) => (
           <article key={task.id} className="entity-card task-card">
