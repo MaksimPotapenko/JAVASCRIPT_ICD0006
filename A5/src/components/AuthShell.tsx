@@ -32,6 +32,10 @@ export function AuthShell({
           <li>Protected routing keeps private screens behind a valid session.</li>
           <li>CRUD flows cover categories, priorities, and tasks in one dashboard.</li>
         </ul>
+        // Match A4 by exposing a direct escape hatch back to the shared landing page.
+        <a className="button-link button-link-ghost" href="https://mpotap.proxy.itcollege.ee/">
+          Back to main page
+        </a>
       </section>
 
       // The right side hosts the actual login or registration form content.

@@ -33,6 +33,7 @@ async function signOut(): Promise<void> {
       <nav class="main-nav">
         <RouterLink :to="{ name: 'home' }">Events</RouterLink>
         <RouterLink v-if="authStore.isOrganiser" :to="{ name: 'organiser' }">Organiser</RouterLink>
+        <a href="https://mpotap.proxy.itcollege.ee/">Back to main page</a>
         <RouterLink v-if="!authStore.isAuthenticated" :to="{ name: 'login' }">Login</RouterLink>
         <RouterLink v-if="!authStore.isAuthenticated" :to="{ name: 'register' }">Register</RouterLink>
         <button v-if="authStore.isAuthenticated" class="nav-button" type="button" @click="signOut">Logout</button>

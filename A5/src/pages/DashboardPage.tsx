@@ -480,6 +480,9 @@ export function DashboardPage() {
             <strong>{fullName || "Authenticated user"}</strong>
             <span>{authState.session?.email}</span>
           </div>
+          <a className="button-link button-link-ghost" href="https://mpotap.proxy.itcollege.ee/">
+            Back to main page
+          </a>
           <button type="button" onClick={handleLogout}>
             Log out
           </button>
