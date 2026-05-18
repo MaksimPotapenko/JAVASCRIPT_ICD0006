@@ -37,7 +37,7 @@ export function registerAccountRoutes(app) {
       return sendValidationError(response, errorMessage);
     }
 
-    const db = readDb();
+    const db = await readDb();
     // Normalize emails to lowercase so duplicate-account checks are stable.
     const email = request.body.email.trim().toLowerCase();
     const existingUser = db.users.find((user) => user.email === email);
@@ -62,7 +62,7 @@ export function registerAccountRoutes(app) {
 
     // Persist the user before returning the session payload to the client.
     db.users.push(user);
-    writeDb(db);
+    await writeDb(db);
 
     return response.status(201).json(buildSessionResponse(user, refreshToken));
   });
@@ -74,7 +74,7 @@ export function registerAccountRoutes(app) {
       return sendValidationError(response, errorMessage);
     }
 
-    const db = readDb();
+    const db = await readDb();
     const email = request.body.email.trim().toLowerCase();
     const user = db.users.find((item) => item.email === email);
 
@@ -91,12 +91,12 @@ export function registerAccountRoutes(app) {
 
     // Rotate the refresh token on each successful login to invalidate older sessions.
     user.refreshToken = createRefreshToken();
-    writeDb(db);
+    await writeDb(db);
 
     return response.json(buildSessionResponse(user, user.refreshToken));
   });
 
-  app.post("/api/v1/Account/RefreshToken", (request, response) => {
+  app.post("/api/v1/Account/RefreshToken", async (request, response) => {
     // The frontend sends both tokens so the API can verify the refresh-token pair.
     const { jwt, refreshToken } = request.body ?? {};
 
@@ -112,7 +112,7 @@ export function registerAccountRoutes(app) {
       return response.status(401).json({ message: "Invalid jwt payload" });
     }
 
-    const db = readDb();
+    const db = await readDb();
     const user = db.users.find((item) => item.id === userId);
 
     if (!user || user.refreshToken !== refreshToken) {
@@ -122,7 +122,7 @@ export function registerAccountRoutes(app) {
 
     // Rotate again on refresh so stolen older refresh tokens become useless.
     user.refreshToken = createRefreshToken();
-    writeDb(db);
+    await writeDb(db);
 
     return response.json(buildSessionResponse(user, user.refreshToken));
   });

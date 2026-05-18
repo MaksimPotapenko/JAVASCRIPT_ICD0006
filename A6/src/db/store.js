@@ -1,4 +1,4 @@
-import fs from "node:fs";
+import fs from "node:fs/promises";
 import path from "node:path";
 
 import { DATA_FILE } from "../config/env.js";
@@ -14,26 +14,28 @@ const EMPTY_DB = {
 /**
  * Ensures the target data directory and JSON file exist before any read or write operation happens.
  */
-function ensureDbFile() {
+async function ensureDbFile() {
   const directory = path.dirname(DATA_FILE);
   // Create nested directories automatically so container volumes and fresh checkouts work the same way.
-  fs.mkdirSync(directory, { recursive: true });
+  await fs.mkdir(directory, { recursive: true });
 
-  if (!fs.existsSync(DATA_FILE)) {
+  try {
+    await fs.access(DATA_FILE);
+  } catch {
     // Seed a brand-new JSON file with the empty database structure.
-    fs.writeFileSync(DATA_FILE, JSON.stringify(EMPTY_DB, null, 2));
+    await fs.writeFile(DATA_FILE, JSON.stringify(EMPTY_DB, null, 2));
   }
 }
 
 /**
  * Reads the JSON database and normalizes missing collections into empty arrays.
  */
-export function readDb() {
-  ensureDbFile();
+export async function readDb() {
+  await ensureDbFile();
 
   try {
     // Read and parse the entire JSON document because this backend uses a simple file-based store.
-    const contents = fs.readFileSync(DATA_FILE, "utf-8");
+    const contents = await fs.readFile(DATA_FILE, "utf-8");
     const parsed = JSON.parse(contents);
 
     return {
@@ -45,7 +47,7 @@ export function readDb() {
     };
   } catch {
     // If parsing fails, recreate the file so the API can recover into a known-good empty state.
-    fs.writeFileSync(DATA_FILE, JSON.stringify(EMPTY_DB, null, 2));
+    await fs.writeFile(DATA_FILE, JSON.stringify(EMPTY_DB, null, 2));
     return structuredClone(EMPTY_DB);
   }
 }
@@ -53,8 +55,8 @@ export function readDb() {
 /**
  * Rewrites the full JSON database with the latest in-memory state.
  */
-export function writeDb(nextDb) {
-  ensureDbFile();
+export async function writeDb(nextDb) {
+  await ensureDbFile();
   // The whole document is rewritten on each change because the dataset is intentionally small.
-  fs.writeFileSync(DATA_FILE, JSON.stringify(nextDb, null, 2));
+  await fs.writeFile(DATA_FILE, JSON.stringify(nextDb, null, 2));
 }

@@ -4,7 +4,7 @@ import { verifyAccessToken } from "../utils/auth.js";
 /**
  * Protects API routes by validating the bearer token and attaching the authenticated user to the request.
  */
-export function requireAuth(request, response, next) {
+export async function requireAuth(request, response, next) {
   // Expect the standard "Bearer <token>" Authorization header format.
   const authorization = request.headers.authorization ?? "";
   const [scheme, token] = authorization.split(" ");
@@ -16,7 +16,7 @@ export function requireAuth(request, response, next) {
   try {
     // Verify the JWT first, then resolve the actual user from the JSON database.
     const payload = verifyAccessToken(token);
-    const db = readDb();
+    const db = await readDb();
     const user = db.users.find((item) => item.id === payload.sub);
 
     if (!user) {
