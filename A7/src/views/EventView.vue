@@ -149,7 +149,7 @@ function useMyLocation(): void {
             <p class="eyebrow">User Flow</p>
             <h2>Register your team</h2>
           </div>
-          <p class="muted">`POST /Contests/{id}/teams` using the contest classes exposed by the backend.</p>
+          <p class="muted">Register a team into the selected contest class and continue directly into the event flow.</p>
         </div>
 
         <form v-if="authStore.isAuthenticated" class="stack" @submit.prevent="registerTeam">
@@ -187,7 +187,7 @@ function useMyLocation(): void {
             <p class="eyebrow">My teams</p>
             <h2>Activation and live score</h2>
           </div>
-          <p class="muted">Pick a registered team to inspect live activation state from `GET /UserTeams/{id}`.</p>
+          <p class="muted">Pick a registered team to inspect its live activation state and current score.</p>
         </div>
 
         <div v-if="contestUserTeams.length" class="stack">
@@ -232,7 +232,7 @@ function useMyLocation(): void {
             <p class="eyebrow">QR marking</p>
             <h2>Start, finish, and checkpoint scan</h2>
           </div>
-          <p class="muted">This form posts to `POST /Markings` with QR content, optional timestamp, and optional coordinates.</p>
+          <p class="muted">Submit start, finish, or checkpoint scans together with optional timestamp and location data.</p>
         </div>
 
         <form class="stack" @submit.prevent="submitMarking">

@@ -24,7 +24,7 @@ onMounted(() => {
           <p class="eyebrow">Events</p>
           <h2>Contest catalogue</h2>
         </div>
-        <p class="muted">Public list from `GET /Contests`, with direct links into registration and result views.</p>
+        <p class="muted">Public contest list with direct links into registration and result views.</p>
       </div>
 
       <p v-if="nutikasStore.error" class="error-text">{{ nutikasStore.error }}</p>
