@@ -8,4 +8,5 @@ deploy:
   tags:
     - shared
   script:
-    - docker compose -p mpotap-javascript up --build --remove-orphans --detach
+    - docker compose -p mpotap-javascript build --no-cache
+    - docker compose -p mpotap-javascript up --remove-orphans --detach
