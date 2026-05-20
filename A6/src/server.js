@@ -2,8 +2,8 @@ import cors from "cors";
 import express from "express";
 
 import { PORT } from "./config/env.js";
-import { registerAccountRoutes } from "./routes/account.js";
-import { registerTodoRoutes } from "./routes/todos.js";
+import { accountRouter } from "./routes/account.js";
+import { todoRouter } from "./routes/todos.js";
 
 /**
  * Creates the Express application that hosts the Assignment 6 Todo API.
@@ -20,10 +20,10 @@ app.get("/api/v1/health", (_request, response) => {
   response.json({ status: "ok" });
 });
 
-// Register the authentication endpoints before the protected Todo routes.
-registerAccountRoutes(app);
-// Register the category, priority, and task CRUD endpoints.
-registerTodoRoutes(app);
+// Mount authentication endpoints before the protected Todo routes.
+app.use("/api/v1/Account", accountRouter);
+// Mount the category, priority, and task CRUD endpoints under the API prefix.
+app.use("/api/v1", todoRouter);
 
 app.use((error, _request, response, _next) => {
   // Keep unexpected server errors visible in logs while returning a safe generic message.
