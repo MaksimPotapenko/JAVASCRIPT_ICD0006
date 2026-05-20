@@ -44,7 +44,11 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
   switch (action.type) {
     case "auth/start":
       // Start actions clear stale errors and flip the loading flag for UI feedback.
-      return { ...state, isLoading: true, error: "" };
+      return { 
+        ...state,
+        isLoading: true,
+        error: "",
+      };
     case "auth/success":
       // Success stores the latest session snapshot and marks the auth layer as ready.
       return {
@@ -73,7 +77,10 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
       };
     case "auth/clear-error":
       // Sometimes the UI only needs to dismiss a visible error banner.
-      return { ...state, error: "" };
+      return {
+        ...state,
+        error: "",
+      };
     default:
       return state;
   }
