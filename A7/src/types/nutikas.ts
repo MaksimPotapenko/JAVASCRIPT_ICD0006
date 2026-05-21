@@ -295,16 +295,25 @@ export interface OrganiserMarkingUpdateRequest {
 
 export interface ApiErrorShape {
   message?: string | null;
+  error?: string | null;
   title?: string | null;
   detail?: string | null;
   errors?: Record<string, string[]>;
 }
 
+export interface PagedResponse<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+}
+
 export const checkpointTypeLabels: Record<number, string> = {
   1: "Regular",
-  2: "Start",
-  3: "Finish",
-  4: "Bonus",
+  2: "Finish",
+  3: "Start",
+  4: "NoScore",
 };
 
 export const markingTypeLabels: Record<number, string> = {

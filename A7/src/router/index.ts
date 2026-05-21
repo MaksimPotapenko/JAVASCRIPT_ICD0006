@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-import { readStoredSession } from "@/services/session";
+import { extractRoles, readStoredSession } from "@/services/session";
 import HomeView from "@/views/HomeView.vue";
 import LoginView from "@/views/LoginView.vue";
 import OrganiserView from "@/views/OrganiserView.vue";
@@ -38,12 +38,7 @@ router.beforeEach((to) => {
     }
 
     // Read organiser role claims directly from the JWT for simple client-side access control.
-    const payload = JSON.parse(atob(session.jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))) as Record<string, unknown>;
-    const roles = [payload.role, payload.roles, payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]]
-      .flatMap((entry) => (Array.isArray(entry) ? entry : [entry]))
-      .filter((entry): entry is string => typeof entry === "string");
-
-    if (!roles.includes("organiser")) {
+    if (!extractRoles(session.jwt).includes("organiser")) {
       // Non-organisers can still use the public and user flows, but not the organiser workspace.
       return { name: "home" };
     }

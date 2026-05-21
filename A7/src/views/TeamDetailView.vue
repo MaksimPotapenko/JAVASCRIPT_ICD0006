@@ -73,7 +73,7 @@ onMounted(async () => {
     <EventMap
       :checkpoints="checkPoints"
       :markings="team?.markings"
-      subtitle="Filter checkpoints and track points to focus on starts, finishes, bonus points, or the travelled route only."
+      subtitle="Filter checkpoints and track points to focus on starts, finishes, no-score points, or the travelled route only."
     />
 
     <section class="panel">

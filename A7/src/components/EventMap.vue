@@ -20,14 +20,14 @@ interface MapPoint {
   type: number;
 }
 
-// Filters let the user focus on starts/finishes/bonus checkpoints or only the travelled track.
+// Filters let the user focus on starts/finishes/no-score checkpoints or only the travelled track.
 const filters = reactive({
   showCheckpoints: true,
   showMarkings: true,
   includeRegular: true,
   includeStart: true,
   includeFinish: true,
-  includeBonus: true,
+  includeNoScore: true,
   query: "",
 });
 
@@ -90,9 +90,9 @@ const filteredPoints = computed(() => {
     // Then decide whether this checkpoint type passes the type-specific checkboxes.
     const matchesType =
       (point.type === 1 && filters.includeRegular) ||
-      (point.type === 2 && filters.includeStart) ||
-      (point.type === 3 && filters.includeFinish) ||
-      (point.type === 4 && filters.includeBonus);
+      (point.type === 2 && filters.includeFinish) ||
+      (point.type === 3 && filters.includeStart) ||
+      (point.type === 4 && filters.includeNoScore);
 
     // Free-text search filters by the already formatted label visible in the SVG.
     const matchesQuery = !query || point.label.toLowerCase().includes(query);
@@ -123,7 +123,7 @@ const track = computed(() => filteredPoints.value.filter((item) => item.kind ===
       <label><input v-model="filters.includeRegular" type="checkbox" /> Regular</label>
       <label><input v-model="filters.includeStart" type="checkbox" /> Start</label>
       <label><input v-model="filters.includeFinish" type="checkbox" /> Finish</label>
-      <label><input v-model="filters.includeBonus" type="checkbox" /> Bonus</label>
+      <label><input v-model="filters.includeNoScore" type="checkbox" /> NoScore</label>
       <input v-model="filters.query" class="map-search" placeholder="Filter by CP code" type="search" />
     </div>
 

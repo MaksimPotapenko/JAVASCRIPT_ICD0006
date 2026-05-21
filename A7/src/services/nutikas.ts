@@ -22,6 +22,7 @@ import type {
   OrganiserTeamDetails,
   OrganiserTeamUpsertRequest,
   OrganiserUserTeamItem,
+  PagedResponse,
   RegisterInfo,
   TeamRegistrationRequest,
   TeamResultDetail,
@@ -49,6 +50,7 @@ export function loginUser(payload: LoginInfo): Promise<JwtResponse> {
 export function logoutUser(refreshToken: string): Promise<void> {
   return apiRequest("/identity/Account/Logout", {
     method: "POST",
+    auth: true,
     body: { refreshToken },
   });
 }
@@ -253,7 +255,7 @@ export function deleteOrganiserUserTeam(userTeamId: string): Promise<void> {
 }
 
 /** Loads paginated organiser markings, optionally filtered by team. */
-export function fetchOrganiserMarkings(contestId: string, page = 1, pageSize = 50, teamId?: string): Promise<OrganiserMarkingListItem[]> {
+export async function fetchOrganiserMarkings(contestId: string, page = 1, pageSize = 50, teamId?: string): Promise<OrganiserMarkingListItem[]> {
   const params = new URLSearchParams({
     page: String(page),
     pageSize: String(pageSize),
@@ -264,7 +266,12 @@ export function fetchOrganiserMarkings(contestId: string, page = 1, pageSize = 5
     params.set("teamId", teamId);
   }
 
-  return apiRequest(`/organiser/contests/${contestId}/markings?${params.toString()}`, { auth: true });
+  const response = await apiRequest<PagedResponse<OrganiserMarkingListItem> | OrganiserMarkingListItem[]>(
+    `/organiser/contests/${contestId}/markings?${params.toString()}`,
+    { auth: true },
+  );
+
+  return Array.isArray(response) ? response : response.items;
 }
 
 /** Loads one organiser marking detail row for editing. */

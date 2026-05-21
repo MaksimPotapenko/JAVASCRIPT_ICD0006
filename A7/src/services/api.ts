@@ -141,6 +141,11 @@ async function extractErrorMessage(response: Response): Promise<string> {
       return data.message;
     }
 
+    if (data.error) {
+      // Nutikas REST API validation errors use a single error field.
+      return data.error;
+    }
+
     if (data.title) {
       // ASP.NET-style problem details often expose the main text as title.
       return data.title;

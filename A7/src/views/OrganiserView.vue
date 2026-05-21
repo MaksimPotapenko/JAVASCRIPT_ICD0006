@@ -598,9 +598,9 @@ function toNullableIso(value: string): string | null {
               <label for="checkpoint-type">Type</label>
               <select id="checkpoint-type" v-model.number="pointForm.checkPointType">
                 <option :value="1">Regular</option>
-                <option :value="2">Start</option>
-                <option :value="3">Finish</option>
-                <option :value="4">Bonus</option>
+                <option :value="2">Finish</option>
+                <option :value="3">Start</option>
+                <option :value="4">NoScore</option>
               </select>
             </div>
             <div class="field-group">
