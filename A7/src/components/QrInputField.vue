@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref } from "vue";
+import jsQR from "jsqr";
 
 const props = defineProps<{
   modelValue: string;
@@ -28,22 +29,14 @@ async function handleFile(event: Event): Promise<void> {
     return;
   }
 
-  if (!window.BarcodeDetector) {
-    // The manual input still keeps the assignment usable on unsupported browsers.
-    scanMessage.value = "BarcodeDetector is not available in this browser. Please paste the QR text manually.";
-    return;
-  }
-
   scanBusy.value = true;
 
   try {
-    const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
-    const bitmap = await createImageBitmap(file);
-    const [result] = await detector.detect(bitmap);
+    const result = await scanImageFile(file);
 
-    if (result?.rawValue) {
+    if (result) {
       // The QR CPID/text flows straight into the parent form through the v-model contract.
-      emit("update:modelValue", result.rawValue);
+      emit("update:modelValue", result);
       scanMessage.value = "QR content detected and copied into the field.";
     } else {
       scanMessage.value = "No QR code was detected in that image.";
@@ -58,7 +51,7 @@ async function handleFile(event: Event): Promise<void> {
 
 /** Starts a live camera feed and polls it for QR codes until one is found or the user stops it. */
 async function startCameraScan(): Promise<void> {
-  if (!window.BarcodeDetector || !navigator.mediaDevices?.getUserMedia) {
+  if (!navigator.mediaDevices?.getUserMedia) {
     scanMessage.value = "Live camera scanning is not supported in this browser.";
     return;
   }
@@ -81,7 +74,6 @@ async function startCameraScan(): Promise<void> {
     cameraActive.value = true;
     scanMessage.value = "Camera is active. Point it at a checkpoint QR code.";
 
-    const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
     scanIntervalId = window.setInterval(async () => {
       if (!videoRef.value || !cameraActive.value) {
         // Skip work if the component lost its video element or the user already stopped scanning.
@@ -90,9 +82,9 @@ async function startCameraScan(): Promise<void> {
 
       try {
         // Polling avoids introducing a bigger dependency just for browser-side QR decoding.
-        const [result] = await detector.detect(videoRef.value);
-        if (result?.rawValue) {
-          emit("update:modelValue", result.rawValue);
+        const result = scanVideoFrame(videoRef.value);
+        if (result) {
+          emit("update:modelValue", result);
           scanMessage.value = "QR code detected from live camera feed.";
           stopCameraScan();
         }
@@ -130,6 +122,51 @@ function stopCameraScan(): void {
   cameraActive.value = false;
 }
 
+/** Decodes a QR code from an uploaded or camera-captured image file. */
+async function scanImageFile(file: File): Promise<string | null> {
+  const image = await loadImage(file);
+  const canvas = document.createElement("canvas");
+  canvas.width = image.naturalWidth;
+  canvas.height = image.naturalHeight;
+
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) return null;
+
+  context.drawImage(image, 0, 0);
+  URL.revokeObjectURL(image.src);
+
+  const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  return jsQR(imageData.data, imageData.width, imageData.height)?.data ?? null;
+}
+
+/** Creates an image element from a File without navigating away from the current SPA page. */
+function loadImage(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = URL.createObjectURL(file);
+  });
+}
+
+/** Decodes one frame from the live camera preview. */
+function scanVideoFrame(video: HTMLVideoElement): string | null {
+  if (!video.videoWidth || !video.videoHeight) {
+    return null;
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) return null;
+
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  return jsQR(imageData.data, imageData.width, imageData.height)?.data ?? null;
+}
+
 onBeforeUnmount(() => {
   // Clean up webcam access if the user navigates away while the scanner is still running.
   stopCameraScan();
@@ -149,7 +186,7 @@ onBeforeUnmount(() => {
     <div class="inline-actions">
       <label class="button ghost upload-button">
         {{ scanBusy ? "Scanning..." : "Scan from image" }}
-        <input accept="image/*" capture="environment" type="file" @change="handleFile" />
+        <input accept="image/*" capture="environment" type="file" @change.stop="handleFile" />
       </label>
       <button v-if="!cameraActive" class="button ghost" :disabled="cameraBusy" type="button" @click="startCameraScan">
         {{ cameraBusy ? "Starting camera..." : "Scan live" }}
