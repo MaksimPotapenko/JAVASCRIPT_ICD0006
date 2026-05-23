@@ -56,6 +56,10 @@ onMounted(async () => {
   if (authStore.isAuthenticated) {
     // Authenticated users also see their own registered teams for this event.
     await nutikasStore.loadUserTeamsForContest(props.contestId);
+    const firstTeam = contestUserTeams.value[0];
+    if (firstTeam) {
+      await openUserTeam(firstTeam.id);
+    }
   }
 });
 
@@ -63,7 +67,7 @@ onMounted(async () => {
 async function registerTeam(): Promise<void> {
   actionMessage.value = null;
   const created = await nutikasStore.registerContestTeam(props.contestId, { ...registrationForm });
-  selectedUserTeamId.value = created.id;
+  await openUserTeam(created.id);
   actionMessage.value = `Team ${created.teamName ?? "created"} is registered.`;
   // Clear the form after success so the UI is ready for another registration if needed.
   registrationForm.teamName = "";
