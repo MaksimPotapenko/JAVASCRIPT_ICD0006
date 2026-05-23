@@ -21,7 +21,9 @@ export function formatDateInput(value: string | null | undefined): string {
     return "";
   }
 
-  return new Date(value).toISOString().slice(0, 16);
+  const date = new Date(value);
+  const timezoneOffset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 16);
 }
 
 /** Converts a numeric checkpoint type into a readable label. */

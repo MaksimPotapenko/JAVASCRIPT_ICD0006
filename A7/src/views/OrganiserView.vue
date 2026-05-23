@@ -155,13 +155,15 @@ async function submitContest(): Promise<void> {
   };
 
   if (editingContestId.value) {
-    await nutikasStore.saveContest(editingContestId.value, payload);
+    const contestId = editingContestId.value;
+    await nutikasStore.saveContest(contestId, payload);
+    await nutikasStore.loadOrganiserHome();
+    selectedContestId.value = contestId;
+    editContest();
   } else {
     await nutikasStore.createContest(payload);
+    resetContestForm();
   }
-
-  // Reset back to create mode after a successful save.
-  resetContestForm();
 }
 
 /** Creates or updates a contest class for the currently selected contest. */
@@ -435,7 +437,12 @@ function minutesToSeconds(value: number): number {
 
 /** Converts API seconds back into organiser-friendly minute values for editing. */
 function secondsToMinutes(value: number): number {
-  return Math.round(Number(value) / 60);
+  const numericValue = Number(value);
+  if (numericValue > 30 && numericValue % 60 === 0) {
+    return Math.round(numericValue / 60);
+  }
+
+  return numericValue;
 }
 
 /** Formats class durations from API seconds as minutes in the UI. */
