@@ -6,6 +6,7 @@ import QrInputField from "@/components/QrInputField.vue";
 import EventMap from "@/components/EventMap.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useNutikasStore } from "@/stores/nutikas";
+import type { MarkingListItem } from "@/types/nutikas";
 import { formatDate } from "@/utils/format";
 
 const props = defineProps<{
@@ -17,6 +18,7 @@ const nutikasStore = useNutikasStore();
 // selectedUserTeamId drives both the activation lookup and the target for new participant markings.
 const selectedUserTeamId = ref("");
 const actionMessage = ref<string | null>(null);
+const submittedMarkings = ref<Record<string, MarkingListItem[]>>({});
 
 // Team registration payload for POST /Contests/{id}/teams.
 const registrationForm = reactive({
@@ -40,6 +42,34 @@ const contestUserTeams = computed(() => nutikasStore.userTeams[props.contestId] 
 const selectedActivation = computed(() =>
   selectedUserTeamId.value ? nutikasStore.activations[selectedUserTeamId.value] : null,
 );
+const selectedMarkings = computed(() => {
+  if (!selectedUserTeamId.value) return null;
+
+  return [
+    ...(selectedActivation.value?.markings ?? []),
+    ...(submittedMarkings.value[selectedUserTeamId.value] ?? []),
+  ];
+});
+const displayedActivation = computed(() => {
+  if (!selectedUserTeamId.value) return null;
+
+  const activation = selectedActivation.value;
+  const localTeam = contestUserTeams.value.find((team) => team.id === selectedUserTeamId.value);
+  const markings = selectedMarkings.value ?? [];
+
+  if (!activation && !localTeam && !markings.length) return null;
+
+  const localStart = markings.find((marking) => marking.checkPointType === 3 || isCheckpointText(marking.checkPointCPID, "start"));
+  const localFinish = markings.find((marking) => marking.checkPointType === 2 || isCheckpointText(marking.checkPointCPID, "finish"));
+
+  return {
+    teamName: activation?.teamName ?? localTeam?.teamName ?? "Selected team",
+    contestClassName: activation?.contestClassName ?? localTeam?.contestClassName ?? "",
+    startDT: activation?.startDT ?? localStart?.dt ?? null,
+    finishDT: activation?.finishDT ?? localFinish?.dt ?? null,
+    finalScore: activation?.finalScore ?? markings.reduce((sum, marking) => sum + marking.score, 0),
+  };
+});
 // Organisers can see configured checkpoints directly, while regular users get inferred public hints.
 const mapCheckPoints = computed(() =>
   authStore.isOrganiser
@@ -97,6 +127,21 @@ async function submitMarking(): Promise<void> {
   });
 
   selectedUserTeamId.value = userTeamId;
+  const checkpointInfo = resolveCheckpointInfo(markingForm.checkPointId);
+  submittedMarkings.value[userTeamId] = [
+    ...(submittedMarkings.value[userTeamId] ?? []),
+    {
+      id: `local-${Date.now()}`,
+      dt: markingForm.dt ? new Date(markingForm.dt).toISOString() : new Date().toISOString(),
+      checkPointId: markingForm.checkPointId,
+      checkPointCPID: markingForm.checkPointId,
+      checkPointCPCode: markingForm.checkPointId,
+      checkPointType: checkpointInfo.type,
+      score: checkpointInfo.score,
+      lat: markingForm.lat || null,
+      lon: markingForm.lon || null,
+    },
+  ];
   await nutikasStore.loadUserTeamActivationState(userTeamId);
   await nutikasStore.loadContestResults(props.contestId);
   await nutikasStore.loadPublicCheckpointHints(props.contestId);
@@ -111,6 +156,28 @@ function useMyLocation(): void {
     markingForm.lat = position.coords.latitude.toFixed(6);
     markingForm.lon = position.coords.longitude.toFixed(6);
   });
+}
+
+/** Finds checkpoint metadata for optimistic UI updates when the backend accepts but returns stale activation state. */
+function resolveCheckpointInfo(rawValue: string): { type: number; score: number } {
+  const normalizedValue = rawValue.trim().toLowerCase();
+  const checkpoint = mapCheckPoints.value.find((item) =>
+    [item.id, item.cpid, item.cpCode].some((value) => value?.trim().toLowerCase() === normalizedValue),
+  );
+
+  if (checkpoint) {
+    return { type: checkpoint.checkPointType, score: checkpoint.score };
+  }
+
+  if (isCheckpointText(rawValue, "finish")) return { type: 2, score: 0 };
+  if (isCheckpointText(rawValue, "start")) return { type: 3, score: 0 };
+
+  return { type: 1, score: 0 };
+}
+
+/** Checks loose QR/CPID text so demo codes like START-DEMO-2026 still update start/finish UI. */
+function isCheckpointText(value: string | null, expected: "start" | "finish"): boolean {
+  return value?.toLowerCase().includes(expected) ?? false;
 }
 </script>
 
@@ -207,21 +274,21 @@ function useMyLocation(): void {
         </div>
         <p v-else class="empty-state">No registered teams yet for your account in this contest.</p>
 
-        <article v-if="selectedActivation" class="status-card">
-          <strong>{{ selectedActivation.teamName }}</strong>
-          <p class="muted">{{ selectedActivation.contestClassName }}</p>
+        <article v-if="displayedActivation" class="status-card">
+          <strong>{{ displayedActivation.teamName }}</strong>
+          <p class="muted">{{ displayedActivation.contestClassName }}</p>
           <dl class="meta-list">
             <div>
               <dt>Start</dt>
-              <dd>{{ formatDate(selectedActivation.startDT) }}</dd>
+              <dd>{{ formatDate(displayedActivation.startDT) }}</dd>
             </div>
             <div>
               <dt>Finish</dt>
-              <dd>{{ formatDate(selectedActivation.finishDT) }}</dd>
+              <dd>{{ formatDate(displayedActivation.finishDT) }}</dd>
             </div>
             <div>
               <dt>Final score</dt>
-              <dd>{{ selectedActivation.finalScore }}</dd>
+              <dd>{{ displayedActivation.finalScore }}</dd>
             </div>
           </dl>
         </article>
@@ -307,7 +374,7 @@ function useMyLocation(): void {
 
     <EventMap
       :checkpoints="mapCheckPoints"
-      :markings="selectedActivation?.markings ?? null"
+      :markings="selectedMarkings"
       title="Event map and active team track"
       subtitle="Public results are used to infer known checkpoints for the event. If you sign in as an organiser, configured checkpoints are shown directly."
     />
