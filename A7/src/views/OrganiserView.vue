@@ -173,9 +173,9 @@ async function submitClass(): Promise<void> {
   const payload = {
     name: classForm.name,
     orderNr: Number(classForm.orderNr),
-    duration: Number(classForm.duration),
-    maxDuration: classForm.maxDuration ? Number(classForm.maxDuration) : null,
-    overDurationUnit: Number(classForm.overDurationUnit),
+    duration: minutesToSeconds(classForm.duration),
+    maxDuration: classForm.maxDuration ? minutesToSeconds(classForm.maxDuration) : null,
+    overDurationUnit: minutesToSeconds(classForm.overDurationUnit),
     overDurationPenalty: Number(classForm.overDurationPenalty),
   };
 
@@ -317,9 +317,9 @@ function editClass(classId: string): void {
   // Copy values from the chosen class row into the shared editing form.
   classForm.name = item.name ?? "";
   classForm.orderNr = item.orderNr;
-  classForm.duration = item.duration;
-  classForm.maxDuration = item.maxDuration ?? 0;
-  classForm.overDurationUnit = item.overDurationUnit;
+  classForm.duration = secondsToMinutes(item.duration);
+  classForm.maxDuration = item.maxDuration ? secondsToMinutes(item.maxDuration) : 0;
+  classForm.overDurationUnit = secondsToMinutes(item.overDurationUnit);
   classForm.overDurationPenalty = item.overDurationPenalty;
 }
 
@@ -426,6 +426,22 @@ function toIso(value: string): string {
 /** Converts an optional datetime-local field into either ISO text or null. */
 function toNullableIso(value: string): string | null {
   return value ? toIso(value) : null;
+}
+
+/** Converts organiser-friendly minute inputs into the seconds expected by the Nutikas API. */
+function minutesToSeconds(value: number): number {
+  return Math.max(0, Math.round(Number(value) * 60));
+}
+
+/** Converts API seconds back into organiser-friendly minute values for editing. */
+function secondsToMinutes(value: number): number {
+  return Math.round(Number(value) / 60);
+}
+
+/** Formats class durations from API seconds as minutes in the UI. */
+function formatDurationMinutes(value: number | null | undefined): string {
+  if (!value) return "n/a";
+  return `${secondsToMinutes(value)} min`;
 }
 </script>
 
@@ -534,17 +550,17 @@ function toNullableIso(value: string): string | null {
               <input id="order" v-model.number="classForm.orderNr" type="number" />
             </div>
             <div class="field-group">
-              <label for="duration">Duration</label>
+              <label for="duration">Duration (min)</label>
               <input id="duration" v-model.number="classForm.duration" type="number" />
             </div>
             <div class="field-group">
-              <label for="max-duration">Max duration</label>
+              <label for="max-duration">Max duration (min)</label>
               <input id="max-duration" v-model.number="classForm.maxDuration" type="number" />
             </div>
           </div>
           <div class="field-row">
             <div class="field-group">
-              <label for="over-unit">Over duration unit</label>
+              <label for="over-unit">Over duration unit (min)</label>
               <input id="over-unit" v-model.number="classForm.overDurationUnit" type="number" />
             </div>
             <div class="field-group">
@@ -562,7 +578,7 @@ function toNullableIso(value: string): string | null {
           <article v-for="item in contestClasses" :key="item.id" class="list-card">
             <div>
               <strong>{{ item.name }}</strong>
-              <p class="muted">Order {{ item.orderNr }} · {{ item.duration }} min</p>
+              <p class="muted">Order {{ item.orderNr }} · {{ formatDurationMinutes(item.duration) }}</p>
             </div>
             <div class="inline-actions">
               <button class="button ghost" type="button" @click="editClass(item.id)">Edit</button>

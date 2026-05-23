@@ -88,7 +88,7 @@ watch(selectedTeamId, async (teamId) => {
         <p v-else class="empty-state">This event has no public result rows yet.</p>
       </article>
 
-      <article class="panel" v-if="selectedTeam">
+      <article class="panel side-panel" v-if="selectedTeam">
         <div class="section-heading">
           <div>
             <p class="eyebrow">Team detail</p>
@@ -111,14 +111,15 @@ watch(selectedTeamId, async (teamId) => {
             <dd>{{ formatDate(selectedTeam.finishDT) }}</dd>
           </div>
         </dl>
-
-        <EventMap
-          :checkpoints="mapCheckPoints"
-          :markings="selectedTeam.markings"
-          title="User track from point to point"
-          subtitle="Known checkpoints and track points for this event. When organiser access is available, configured checkpoints are shown; otherwise the map falls back to publicly observed checkpoints."
-        />
       </article>
     </section>
+
+    <EventMap
+      v-if="selectedTeam"
+      :checkpoints="mapCheckPoints"
+      :markings="selectedTeam.markings"
+      title="User track from point to point"
+      subtitle="Known checkpoints and track points for this event. When organiser access is available, configured checkpoints are shown; otherwise the map falls back to publicly observed checkpoints."
+    />
   </div>
 </template>
