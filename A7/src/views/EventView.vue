@@ -97,6 +97,9 @@ async function submitMarking(): Promise<void> {
   });
 
   selectedUserTeamId.value = userTeamId;
+  await nutikasStore.loadUserTeamActivationState(userTeamId);
+  await nutikasStore.loadContestResults(props.contestId);
+  await nutikasStore.loadPublicCheckpointHints(props.contestId);
   // Keep the success text human-readable whether the backend returned a full activation state or not.
   actionMessage.value = activation ? `Marking accepted for ${activation.teamName ?? "team"}.` : "Marking submitted.";
 }
