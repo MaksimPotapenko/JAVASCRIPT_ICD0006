@@ -132,6 +132,12 @@ export const useNutikasStore = defineStore("nutikas", () => {
   async function submitParticipantMarking(payload: MarkingRequest): Promise<UserTeamActivation | null> {
     const response = await run(() => createParticipantMarking(payload));
 
+    if (!response.statusOk) {
+      const message = response.message ?? `Marking was rejected with status code ${response.statusCode}.`;
+      error.value = message;
+      throw new Error(message);
+    }
+
     if (response.result) {
       // This lets the event page reflect fresh score/start/finish state immediately after scanning.
       activations.value[payload.userTeamId] = response.result;
