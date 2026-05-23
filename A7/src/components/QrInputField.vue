@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from "vue";
+import { nextTick, onBeforeUnmount, ref } from "vue";
 import jsQR from "jsqr";
 
 const props = defineProps<{
@@ -63,6 +63,8 @@ async function startCameraScan(): Promise<void> {
       video: { facingMode: { ideal: "environment" } },
       audio: false,
     });
+    cameraActive.value = true;
+    await nextTick();
 
     if (!videoRef.value) {
       throw new Error("Video element is not ready");
@@ -71,7 +73,6 @@ async function startCameraScan(): Promise<void> {
     // Attach the media stream to the preview so the user can aim the device camera.
     videoRef.value.srcObject = stream;
     await videoRef.value.play();
-    cameraActive.value = true;
     scanMessage.value = "Camera is active. Point it at a checkpoint QR code.";
 
     scanIntervalId = window.setInterval(async () => {
